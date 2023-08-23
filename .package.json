@@ -1,0 +1,14 @@
+{
+  "name": "@mini-safe/monorepo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "hardhat:devnet": "yarn workspace hardhat devnet-new-2-hardhat",
+    "hardhat:deploy": "yarn workspace hardhat deploy"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}
