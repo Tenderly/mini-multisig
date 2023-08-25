@@ -31,7 +31,6 @@
     "types": [
       "cypress",
       "@synthetixio/synpress/support",
-      "@synthetixio/synpress/commands",
       "cypress-wait-until",
       "@testing-library/cypress"
     ],

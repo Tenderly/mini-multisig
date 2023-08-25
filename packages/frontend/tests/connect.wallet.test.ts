@@ -6,7 +6,7 @@ test("test", async ({ page }) => {
   await page.getByTestId("rk-connect-button").click();
   await page.getByTestId("rk-wallet-option-metaMask").click();
   await metamask.acceptAccess();
-  await expect(page.getByTestId("rk-account-button")).toContainText(
-    "0xE5...8ce1"
+  await expect(page.getByTestId("address")).toContainText(
+    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
   );
 });
