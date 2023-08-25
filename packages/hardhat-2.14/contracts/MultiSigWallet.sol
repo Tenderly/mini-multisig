@@ -1,30 +1,62 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
-
-// never forget the OG simple sig wallet: https://github.com/christianlundkvist/simple-multisig/blob/master/contracts/SimpleMultiSig.sol
-
-pragma experimental ABIEncoderV2;
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+pragma solidity ^0.8.10;
 import "./MultiSigFactory.sol";
 
 contract MultiSigWallet {
-	using ECDSA for bytes32;
+  // Events
+  event Deposit(address indexed sender, uint amount, uint balance);
+
+  event Owner(address indexed owner, bool added);
+
+  event SubmitTransaction(
+    address indexed owner,
+    uint indexed txIndex,
+    address indexed to,
+    uint value,
+    bytes data
+  );
+  event ConfirmTransaction(address indexed owner, uint indexed txIndex);
+  event RevokeConfirmation(address indexed owner, uint indexed txIndex);
+  event ExecuteTransaction(
+    address indexed owner,
+    address payable to,
+    uint256 value,
+    bytes data,
+    uint256 nonce,
+    bytes32 hash,
+    bytes result
+  );
+
   MultiSigFactory private multiSigFactory;
 
-	event Deposit(address indexed sender, uint amount, uint balance);
-	event ExecuteTransaction( address indexed owner, address payable to, uint256 value, bytes data, uint256 nonce, bytes32 hash, bytes result);
-	event Owner( address indexed owner, bool added);
-
-	mapping(address => bool) public isOwner;
-
+  // List of owners of the wallet
   address[] public owners;
+  // Mapping to allow for easy checks if someone is an owner
+  mapping(address => bool) public isOwner;
+  // Number of confirmations required to execute a transaction
+  uint8 public signaturesRequired;
+  uint public nonce;
+  uint public chainId;
 
-	uint public signaturesRequired;
-	uint public nonce;
-	uint public chainId;
+  // Tx object
+  struct Transaction {
+    address payable to;
+    uint value;
+    bytes data;
+    bool executed;
+    uint8 numConfirmations;
+  }
 
+  // mapping from tx index => owner => bool
+  // use this to check if some transaction is confirmed by some person
+  mapping(uint => mapping(address => bool)) public isConfirmed;
+
+  // List of all tracked transactions
+  Transaction[] public transactions;
+
+  // Helper functions
   modifier onlyOwner() {
-    require(isOwner[msg.sender], "Not owner");
+    require(isOwner[msg.sender], "not owner");
     _;
   }
 
@@ -33,30 +65,187 @@ contract MultiSigWallet {
     _;
   }
 
+  modifier txExists(uint _txIndex) {
+    require(_txIndex < transactions.length, "tx does not exist");
+    _;
+  }
+
+  modifier notExecuted(uint _txIndex) {
+    require(!transactions[_txIndex].executed, "tx already executed");
+    _;
+  }
+
+  modifier notConfirmed(uint _txIndex) {
+    require(!isConfirmed[_txIndex][msg.sender], "tx already confirmed");
+    _;
+  }
+
   modifier requireNonZeroSignatures(uint _signaturesRequired) {
     require(_signaturesRequired > 0, "Must be non-zero sigs required");
     _;
   }
 
-  constructor(uint256 _chainId, address[] memory _owners, uint _signaturesRequired, address _factory) payable requireNonZeroSignatures(_signaturesRequired) {
+  constructor(
+    uint256 _chainId,
+    address[] memory _owners,
+    uint8 _signaturesRequired,
+    address _factory
+  ) payable requireNonZeroSignatures(_signaturesRequired) {
+    require(_owners.length > 0, "owners required");
+
+    chainId = _chainId;
     multiSigFactory = MultiSigFactory(_factory);
-    signaturesRequired = _signaturesRequired;
+
     for (uint i = 0; i < _owners.length; i++) {
       address owner = _owners[i];
 
-      require(owner!=address(0), "constructor: zero address");
-      require(!isOwner[owner], "constructor: owner not unique");
+      require(owner != address(0), "invalid owner");
+      require(!isOwner[owner], "owner not unique");
 
       isOwner[owner] = true;
       owners.push(owner);
-
-      emit Owner(owner,isOwner[owner]);
+      emit Owner(owner, isOwner[owner]);
     }
 
-    chainId = _chainId;
+    signaturesRequired = _signaturesRequired;
   }
 
-  function addSigner(address newSigner, uint256 newSignaturesRequired) public onlySelf requireNonZeroSignatures(newSignaturesRequired) {
+  receive() external payable {
+    emit Deposit(msg.sender, msg.value, address(this).balance);
+  }
+
+  function submitTransaction(
+    address payable _to,
+    uint _value,
+    bytes memory _data
+  ) public onlyOwner {
+    uint txIndex = transactions.length;
+
+    transactions.push(
+      Transaction({
+        to: _to,
+        value: _value,
+        data: _data,
+        executed: false,
+        numConfirmations: 0
+      })
+    );
+
+    emit SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
+  }
+
+  function confirmTransaction(
+    uint _txIndex
+  )
+    public
+    onlyOwner
+    txExists(_txIndex)
+    notExecuted(_txIndex)
+    notConfirmed(_txIndex)
+  {
+    Transaction storage transaction = transactions[_txIndex];
+    transaction.numConfirmations += 1;
+    isConfirmed[_txIndex][msg.sender] = true;
+
+    emit ConfirmTransaction(msg.sender, _txIndex);
+  }
+
+  function executeTransaction(
+    uint _txIndex
+  ) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
+    Transaction storage transaction = transactions[_txIndex];
+
+    require(
+      transaction.numConfirmations >= signaturesRequired,
+      "cannot execute tx"
+    );
+
+    transaction.executed = true;
+
+    (bool success, bytes memory result) = transaction.to.call{
+      value: transaction.value
+    }(transaction.data);
+    require(success, "tx failed");
+
+    bytes32 _hash = getTransactionHash(nonce, transaction);
+
+    emit ExecuteTransaction(
+      msg.sender,
+      transaction.to,
+      transaction.value,
+      transaction.data,
+      nonce,
+      _hash,
+      result
+    );
+  }
+
+  function revokeConfirmation(
+    uint _txIndex
+  ) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
+    Transaction storage transaction = transactions[_txIndex];
+
+    require(isConfirmed[_txIndex][msg.sender], "tx not confirmed");
+
+    transaction.numConfirmations -= 1;
+    isConfirmed[_txIndex][msg.sender] = false;
+
+    emit RevokeConfirmation(msg.sender, _txIndex);
+  }
+
+  function getOwners() public view returns (address[] memory) {
+    return owners;
+  }
+
+  function getTransactionCount() public view returns (uint) {
+    return transactions.length;
+  }
+
+  function getTransaction(
+    uint _txIndex
+  )
+    public
+    view
+    returns (
+      address to,
+      uint value,
+      bytes memory data,
+      bool executed,
+      uint8 numConfirmations
+    )
+  {
+    Transaction storage transaction = transactions[_txIndex];
+
+    return (
+      transaction.to,
+      transaction.value,
+      transaction.data,
+      transaction.executed,
+      transaction.numConfirmations
+    );
+  }
+
+  function getTransactionHash(
+    uint256 _nonce,
+    Transaction memory transaction
+  ) public view returns (bytes32) {
+    return
+      keccak256(
+        abi.encodePacked(
+          address(this),
+          chainId,
+          _nonce,
+          transaction.to,
+          transaction.value,
+          transaction.data
+        )
+      );
+  }
+
+  function addSigner(
+    address newSigner,
+    uint8 newSignaturesRequired
+  ) public onlySelf requireNonZeroSignatures(newSignaturesRequired) {
     require(newSigner != address(0), "addSigner: zero address");
     require(!isOwner[newSigner], "addSigner: owner not unique");
 
@@ -68,10 +257,13 @@ contract MultiSigWallet {
     multiSigFactory.emitOwners(address(this), owners, newSignaturesRequired);
   }
 
-  function removeSigner(address oldSigner, uint256 newSignaturesRequired) public onlySelf requireNonZeroSignatures(newSignaturesRequired) {
+  function removeSigner(
+    address oldSigner,
+    uint8 newSignaturesRequired
+  ) public onlySelf requireNonZeroSignatures(newSignaturesRequired) {
     require(isOwner[oldSigner], "removeSigner: not owner");
 
-     _removeOwner(oldSigner);
+    _removeOwner(oldSigner);
     signaturesRequired = newSignaturesRequired;
 
     emit Owner(oldSigner, isOwner[oldSigner]);
@@ -88,7 +280,7 @@ contract MultiSigWallet {
         owners.pop();
       } else {
         owners.pop();
-        for (uint256 j = i+1; j <= ownersLength - 1; j++) {
+        for (uint256 j = i + 1; j <= ownersLength - 1; j++) {
           owners.push(poppedOwners[j]);
         }
         return;
@@ -96,49 +288,9 @@ contract MultiSigWallet {
     }
   }
 
-  function updateSignaturesRequired(uint256 newSignaturesRequired) public onlySelf requireNonZeroSignatures(newSignaturesRequired) {
+  function updateSignaturesRequired(
+    uint8 newSignaturesRequired
+  ) public onlySelf requireNonZeroSignatures(newSignaturesRequired) {
     signaturesRequired = newSignaturesRequired;
-  }
-
-  function executeTransaction( address payable to, uint256 value, bytes memory data, bytes[] memory signatures)
-      public
-      onlyOwner
-      returns (bytes memory)
-  {
-    bytes32 _hash =  getTransactionHash(nonce, to, value, data);
-
-    nonce++;
-
-    uint256 validSignatures;
-    address duplicateGuard;
-    for (uint i = 0; i < signatures.length; i++) {
-        address recovered = recover(_hash, signatures[i]);
-        require(recovered > duplicateGuard, "executeTransaction: duplicate or unordered signatures");
-        duplicateGuard = recovered;
-
-        if (isOwner[recovered]) {
-          validSignatures++;
-        }
-    }
-
-    require(validSignatures >= signaturesRequired, "executeTransaction: not enough valid signatures");
-
-    (bool success, bytes memory result) = to.call{value: value}(data);
-    require(success, "executeTransaction: tx failed");
-
-    emit ExecuteTransaction(msg.sender, to, value, data, nonce-1, _hash, result);
-    return result;
-  }
-
-  function getTransactionHash( uint256 _nonce, address to, uint256 value, bytes memory data ) public view returns (bytes32) {
-    return keccak256(abi.encodePacked(address(this), chainId, _nonce, to, value, data));
-  }
-
-  function recover(bytes32 _hash, bytes memory _signature) public pure returns (address) {
-    return _hash.toEthSignedMessageHash().recover(_signature);
-  }
-
-  receive() payable external {
-    emit Deposit(msg.sender, msg.value, address(this).balance);
   }
 }

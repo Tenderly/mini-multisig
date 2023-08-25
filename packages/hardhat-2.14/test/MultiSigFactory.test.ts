@@ -1,4 +1,3 @@
-// import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { fail } from "assert";
 import { expect } from "chai";
 import { ethers, tenderly } from "hardhat";
@@ -24,11 +23,16 @@ describe("MultiSigFactory", function () {
 
     const MultiSigFactoryFactory = await ethers.getContractFactory(
       "MultiSigFactory",
-      owner
+      owner,
     );
     factory = await MultiSigFactoryFactory.deploy();
 
     await factory.deployed();
+
+    await tenderly.verify({
+      name: "MultiSigFactory",
+      address: factory.address,
+    });
   });
 
   it("should deploy a new MultiSig contract", async function () {
@@ -76,7 +80,7 @@ describe("MultiSigFactory", function () {
       fail("Events missing");
     }
     expect(createEvent.args?.contractAddress).to.not.equal(
-      ethers.utils.hexZeroPad("0x0", 20)
+      ethers.utils.hexZeroPad("0x0", 20),
     );
 
     await verifyMultisig(createEvent.args?.contractAddress as string);
