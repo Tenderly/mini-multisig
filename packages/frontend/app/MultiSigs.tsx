@@ -1,7 +1,7 @@
 "use client";
-import { ChangeEvent, useEffect, useState } from "react";
-import { BigNumber, ethers } from "ethers";
-import { Button, Form, TextArea, TextInput } from "@carbon/react";
+import {ChangeEvent, useEffect, useState} from "react";
+import {BigNumber, ethers} from "ethers";
+import {Button, Form, TextArea, TextInput} from "@carbon/react";
 import {
   useContractWrite,
   useNetwork,
@@ -10,9 +10,10 @@ import {
   useSendTransaction,
   useWaitForTransaction,
 } from "wagmi";
-import { Abi, Address } from "viem";
-import { TData, TMultiSig, TTransaction } from "@/types/MultiSig";
-import { fetch } from "next/dist/compiled/@edge-runtime/primitives";
+import {Abi, Address} from "viem";
+import {TData, TMultiSig, TTransaction} from "@/types/MultiSig";
+
+const BigIntReplacer = (k: any, v: any) => typeof v === 'bigint' ? v.toString() : v;
 
 function MultiSigListItem(
   multiSig: TMultiSig,
@@ -42,7 +43,14 @@ type MultiSigParams = {
   transactions?: TTransaction[];
 };
 
-function MultiSig({ multiSig, transactions }: MultiSigParams) {
+function MultiSig({ multiSig }: MultiSigParams) {
+  const [transactions, setTransactions] = useState([] as TTransaction[])
+  const loadTranasctions = () => {
+    fetch(`api/multisig/${multiSig.address}/transaction`, {
+      method: "GET"
+    }).then(r=>r.json()).then(setTransactions);
+  }
+  useEffect(loadTranasctions, [])
   return (
     <>
       <h5>
@@ -181,17 +189,19 @@ function TxOverview({
     // do not send TX data if 0
     delete transaction.data;
   }
-
-  const { config, error } = usePrepareSendTransaction(transaction);
+  console.log(transaction)
+  const { config, error } = usePrepareSendTransaction({...transaction, value: BigInt(transaction.value)});
   const { sendTransaction, isLoading, isSuccess, isError, data } =
     useSendTransaction(config);
   const tx = useWaitForTransaction({ hash: data?.hash });
 
   useEffect(() => {
-    // fetch(`api/multisig/${multiSig.address}/transaction`, {
-    //   method: "POST",
-    //   body: JSON.stringify(transaction),
-    // }).then(onProposed);
+    if(!isSuccess){ return ;}
+    fetch(`api/multisig/${multiSig.address}/transaction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(transaction, BigIntReplacer),
+    }).then(onProposed);
   }, [isSuccess]);
   return (
     <div>
@@ -218,8 +228,7 @@ function SubmitTransaction({ multiSig }: MultiSigParams) {
   const TXZERO = {
     to: "0x0" as TData,
     data: "0x0" as TData,
-    value: BigInt("10000000"),
-    chainId: network.chain?.id || 1,
+    value: 111,
     name: "testTx",
   };
   const [proposing, setProposing] = useState(false);
@@ -310,7 +319,7 @@ function Transactions({ multiSig, transactions }: MultiSigParams) {
       <ul>
         {transactions?.map((tx, idx) => (
           <li key={idx}>
-            {tx.to} {tx.value.toString()} {tx.name}
+            📬 {tx.to} | 💲{tx.value.toString()} | 🏷️ {tx.name}
           </li>
         ))}
       </ul>
@@ -334,6 +343,7 @@ export default function MultiSigs({
   };
 
   useEffect(reloadMultiSigs, []);
+
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-normal p-24">

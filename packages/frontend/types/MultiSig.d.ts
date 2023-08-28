@@ -1,4 +1,3 @@
-import { BigNumber } from "ethers"
 import { Address, Transaction } from "viem"
 
 type TMultiSig = {
@@ -12,9 +11,8 @@ type TData = `0x${string}`;
 
 type TTransaction =  {
     data?: TData,
-    chainId: number,
     to: Address,
-    value: bigint,
+    value: number,
     name: string,
     from?: Address
 }
