@@ -8,7 +8,7 @@ const config: HardhatUserConfig = {
   solidity: "0.8.19",
   networks: {
     tenderly: {
-      url: "https://rpc.vnet.tenderly.co/devnet/test-t/76c2fc28-2586-4e5a-a4a1-673f81f6e881",
+      url: "https://rpc.vnet.tenderly.co/devnet/mini-safe/4d47d553-7d93-4e3d-ab05-e956d3bdfae9",
     },
   },
   tenderly: {

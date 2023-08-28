@@ -22,7 +22,7 @@ import {
   zora,
 } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
-import * as tenderlyConfig from "../tenderly.json";
+import tenderlyConfig from "../tenderly.json";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
@@ -88,7 +88,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 console.log("Connecting to ", tenderlyConfig.devnet.rpc);
 
 function devnet() {
-  const avalanche: Chain = {
+  const devnetChain: Chain = {
     id: tenderlyConfig.devnet.chainId,
     name: "Test Tenderly",
     network: "test tenderly",
@@ -109,13 +109,7 @@ function devnet() {
       default: { name: "SnowTrace", url: "https://snowtrace.io" },
       etherscan: { name: "SnowTrace", url: "https://snowtrace.io" },
     },
-    contracts: {
-      multicall3: {
-        address: "0xca11bde05977b3631167028862be2a173976ca11",
-        blockCreated: 11_907_934,
-      },
-    },
-    testnet: false,
+    testnet: true,
   };
-  return avalanche;
+  return devnetChain;
 }

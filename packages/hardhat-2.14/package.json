@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "devnet": "ts-node lib/devnet.new.ts",
-    "deploy": "npx hardhat run scripts/deploy.ts"
+    "deploy": "npx hardhat run scripts/deploy.ts",
+    "stage": "npm run devnet mini-safe mini-safe && hardhat run scripts/deploy.ts --network tenderly"
   },
   "keywords": [],
   "author": "",
