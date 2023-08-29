@@ -1,6 +1,6 @@
 "use client";
 import {ChangeEvent, useEffect, useState} from "react";
-import {BigNumber, ethers} from "ethers";
+import {BigNumber, BytesLike, ethers} from "ethers";
 import {Button, Form, TextArea, TextInput} from "@carbon/react";
 import {
   useContractWrite,
@@ -10,7 +10,7 @@ import {
   useSendTransaction,
   useWaitForTransaction,
 } from "wagmi";
-import {Abi, Address} from "viem";
+import {Abi, Address, parseEther} from "viem";
 import {TData, TMultiSig, TTransaction} from "@/types/MultiSig";
 
 const BigIntReplacer = (k: any, v: any) => typeof v === 'bigint' ? v.toString() : v;
@@ -41,9 +41,10 @@ async function loadMultiSigs() {
 type MultiSigParams = {
   multiSig: TMultiSig;
   transactions?: TTransaction[];
+  multiSigAbi: Abi
 };
 
-function MultiSig({ multiSig }: MultiSigParams) {
+function MultiSig({ multiSig, multiSigAbi }: MultiSigParams) {
   const [transactions, setTransactions] = useState([] as TTransaction[])
   const loadTranasctions = () => {
     fetch(`api/multisig/${multiSig.address}/transaction`, {
@@ -66,7 +67,7 @@ function MultiSig({ multiSig }: MultiSigParams) {
       Number of signers:{" "}
       {BigNumber.from(multiSig.signaturesRequired.hex).toNumber()}
       <br />
-      <Transactions multiSig={multiSig} transactions={transactions} />
+      <Transactions multiSig={multiSig} transactions={transactions} multiSigAbi={multiSigAbi} />
     </>
   );
 }
@@ -180,20 +181,41 @@ function TxOverview({
   transaction,
   multiSig,
   onProposed,
+  multiSigAbi
 }: {
   transaction: TTransaction;
   multiSig: TMultiSig;
   onProposed: () => void;
+  multiSigAbi: Abi
 }) {
   if (transaction.data == "0x0") {
     // do not send TX data if 0
     delete transaction.data;
   }
   console.log(transaction)
-  const { config, error } = usePrepareSendTransaction({...transaction, value: BigInt(transaction.value)});
-  const { sendTransaction, isLoading, isSuccess, isError, data } =
-    useSendTransaction(config);
-  const tx = useWaitForTransaction({ hash: data?.hash });
+  const txsend = {...transaction, value: BigInt(transaction.value)};
+  console.log(parseEther(transaction.value.toString(),  'wei') )
+  const {config: writeConfig} =  usePrepareContractWrite({
+    address: multiSig.address,
+    abi: multiSigAbi,
+    functionName: 'submitTransaction',
+    args: [
+      txsend.to,
+      txsend.value,
+      ethers.utils.hexlify(txsend.data as BytesLike)
+/**
+ *  address payable _to,
+    uint _value,
+    bytes memory _data
+ */
+    ]
+  })
+
+  // const { config, error } = usePrepareSendTransaction(txsend);
+  // const { sendTransaction, isLoading, isSuccess, isError, data } =
+  //   useSendTransaction(config);
+  const {write, data} = useContractWrite(writeConfig)
+  const {isLoading, isSuccess, isError, data: transactionData} = useWaitForTransaction({ hash: data?.hash });
 
   useEffect(() => {
     if(!isSuccess){ return ;}
@@ -212,8 +234,8 @@ function TxOverview({
         <li>value: {transaction.value.toString()}</li>
       </ul>
       <Button
-        disabled={!sendTransaction || isLoading}
-        onClick={() => sendTransaction?.()}
+        disabled={!write || isLoading}
+        onClick={() => write?.()}
       >
         Submit
       </Button>
@@ -223,7 +245,7 @@ function TxOverview({
   );
 }
 
-function SubmitTransaction({ multiSig }: MultiSigParams) {
+function SubmitTransaction({ multiSig, multiSigAbi }: MultiSigParams) {
   const network = useNetwork();
   const TXZERO = {
     to: "0x0" as TData,
@@ -288,7 +310,7 @@ function SubmitTransaction({ multiSig }: MultiSigParams) {
       {review && (
         <div>
           <h5>Review</h5>
-          <TxOverview transaction={tx} multiSig={multiSig} onProposed={reset} />
+          <TxOverview transaction={tx} multiSig={multiSig} onProposed={reset} multiSigAbi={multiSigAbi}/>
 
           <Button
             onClick={() => {
@@ -312,7 +334,7 @@ function SubmitTransaction({ multiSig }: MultiSigParams) {
   );
 }
 
-function Transactions({ multiSig, transactions }: MultiSigParams) {
+function Transactions({ multiSig, transactions, multiSigAbi }: MultiSigParams) {
   return (
     <div>
       <h3>Transactions</h3>
@@ -323,7 +345,7 @@ function Transactions({ multiSig, transactions }: MultiSigParams) {
           </li>
         ))}
       </ul>
-      <SubmitTransaction multiSig={multiSig} />
+      <SubmitTransaction multiSig={multiSig} multiSigAbi={multiSigAbi}/>
     </div>
   );
 }
@@ -331,9 +353,11 @@ function Transactions({ multiSig, transactions }: MultiSigParams) {
 export default function MultiSigs({
   multiSigFactoryAddress,
   abi,
+    multiSigAbi
 }: {
   multiSigFactoryAddress: Address;
   abi: Abi;
+  multiSigAbi: Abi
 }) {
   const [selected, setSelected] = useState<null | TMultiSig>(null);
   const [multiSigs, setMultiSigs] = useState([] as TMultiSig[]);
@@ -371,19 +395,9 @@ export default function MultiSigs({
             )}
           </div>
         </div>
-        <div>{!!selected && <MultiSig multiSig={selected} />}</div>
+        <div>{!!selected && <MultiSig multiSig={selected} multiSigAbi={multiSigAbi} />}</div>
       </div>
       <div>3</div>
     </div>
   );
-}
-
-function createTransaction() {
-  // new ethers.Contract(Contracts.MultiSig)
-  // const newHash = await readContracts[contractName].getTransactionHash(
-  //     nonce.toNumber(),
-  //     executeToAddress,
-  //     parseEther("" + parseFloat(amount).toFixed(12)),
-  //     callData,
-  // );
 }

@@ -10,7 +10,9 @@ export default function Home() {
       <Sender />
       <MultiSigs
        multiSigFactoryAddress={deployments.multiSigFactory.address as Address} 
-      abi={deployments.multiSigFactory.abi as Abi}/>
+        abi={deployments.multiSigFactory.abi as Abi}
+       multiSigAbi={deployments.multiSig.abi as Abi}
+      />
     </main>
   );
 }
