@@ -8,7 +8,7 @@ const config: HardhatUserConfig = {
     solidity: "0.8.19",
     networks: {
         tenderly: {
-      url: "https://rpc.vnet.tenderly.co/devnet/mini-safe/f4e2d270-e9ad-4244-93a9-f88492762349",
+      url: "https://rpc.vnet.tenderly.co/devnet/mini-safe/9a8f4312-b72e-48da-9547-a3c743bb3480",
         },
     },
     tenderly: {
@@ -25,6 +25,5 @@ task("verifyExistingMS", "Verifies deployed MultiSigWallet instance")
             name: "MultiSigWallet",
             address: args.address
         })
-
     })
 export default config;
