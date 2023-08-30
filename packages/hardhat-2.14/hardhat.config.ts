@@ -6,9 +6,10 @@ tenderly.setup({automaticVerifications: false});
 
 const config: HardhatUserConfig = {
     solidity: "0.8.19",
+    defaultNetwork: "tenderly",
     networks: {
         tenderly: {
-      url: "https://rpc.vnet.tenderly.co/devnet/mini-safe/9a8f4312-b72e-48da-9547-a3c743bb3480",
+            url: "https://rpc.vnet.tenderly.co/devnet/mini-safe/46524e3a-0054-4221-bdff-a520dd7725fa",
         },
     },
     tenderly: {
@@ -19,8 +20,10 @@ const config: HardhatUserConfig = {
 
 task("verifyExistingMS", "Verifies deployed MultiSigWallet instance")
     .addParam("address")
-    .setAction(async (args) => {
+    .setAction(async (args, hre) => {
         await hre.run("compile");
+        console.log("Verifying MS", args.address)
+        // TODO: something wrong with verification:(
         await hre.tenderly.verify({
             name: "MultiSigWallet",
             address: args.address

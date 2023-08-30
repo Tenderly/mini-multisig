@@ -18,6 +18,8 @@
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
+    "carbon-components": "^10.58.10",
+    "carbon-components-react": "^8.36.0",
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.16",
     "ethers": "^5.7.2",
@@ -33,6 +35,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.37.1",
-    "@synthetixio/synpress": "^3.7.2-beta.4"
+    "@synthetixio/synpress": "^3.7.2-beta.4",
+    "@types/carbon-components-react": "^7.55.2",
+    "prettier": "^3.0.3"
   }
 }
