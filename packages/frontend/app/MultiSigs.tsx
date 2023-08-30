@@ -12,6 +12,7 @@ import { BigNumber, ethers } from "ethers";
 import { ChangeEvent, useEffect, useState } from "react";
 import { Abi, Address } from "viem";
 import {
+  useAccount,
   useContractRead,
   useContractWrite,
   useNetwork,
@@ -20,6 +21,7 @@ import {
 } from "wagmi";
 
 import React from "react";
+import { Link } from "@carbon/react";
 
 const BigIntReplacer = (k: any, v: any) =>
   typeof v === "bigint" ? v.toString() : v;
@@ -86,6 +88,7 @@ function MultiSig({ multiSig, multiSigAbi }: MultiSigParams) {
         multiSig={multiSig}
         transactions={transactions}
         multiSigAbi={multiSigAbi}
+        onRefresh={loadTranasctions}
       />
       <SubmitTransaction
         multiSig={multiSig}
@@ -153,16 +156,18 @@ function CreateMultiSig({
     const signaturesRequired = logs[0].args.signaturesRequired;
 
     // TODO: contract verification doesn't really work :(
-    fetch("api/multisig", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: multiSig.name,
-        address: contractAddress,
-        owners,
-        signaturesRequired,
-      }),
-    }).then(onCreated);
+    setTimeout(() => {
+      fetch("api/multisig", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: multiSig.name,
+          address: contractAddress,
+          owners,
+          signaturesRequired,
+        }),
+      }).then(onCreated);
+    }, 1000);
 
     console.log(logs, { contractAddress, owners, signaturesRequired });
   }, [isSuccess]);
@@ -268,7 +273,9 @@ function TxOverview({
       body: JSON.stringify(
         {
           ...transaction,
+          hash: data?.hash,
           txIndex: createdEvent.args.txIndex.toNumber(),
+          approvedBy: []
         } as TMultiSigTransaction,
         BigIntReplacer,
       ),
@@ -407,33 +414,141 @@ function SubmitTransaction({
 function Transaction({
   transaction,
   multiSigParams,
+                       onRefresh
 }: {
   transaction: TMultiSigTransaction;
   multiSigParams: MultiSigParams;
+  onRefresh:()=>void
 }) {
-  const { data, error, isLoading } = useContractRead({
-    abi: multiSigParams.multiSigAbi,
-    address: multiSigParams.multiSig.address,
-    functionName: "isConfirmed",
-    args: [transaction.txIndex],
-  });
-  console.log(data);
+  const me = useAccount();
+  const [approval, setApproval] = useState(false);
+
   return (
-    <>
-      📬 {transaction.to} | 💲{transaction.value.toString()} | 🏷️{" "}
-      {transaction.name} | {transaction.txIndex}
-    </>
+    <div className="mb-10">
+      <div className="mb-3">
+        <strong>
+          {transaction.txIndex}. {transaction.name}
+        </strong>
+      </div>
+      <div className="mb-3">
+        To: <code>{transaction.to}</code>
+      </div>
+
+      <div className="mb-3">Value: {transaction.value.toString()}</div>
+
+      <div className="">
+        {multiSigParams.multiSig.owners.map((owner) => {
+          return (
+            <div className="mb-3" key={owner}>
+              {transaction.approvedBy.indexOf(owner) >= 0 ? "✅" : "⬛️"}{" "}
+              <code>
+                {owner == me.address ? <strong>{owner}</strong> : owner}
+              </code>
+            </div>
+          );
+        })}
+      </div>
+
+      {transaction.approvedBy.indexOf(me.address) == -1 && (
+        <span className="mr-2">
+          <Link href="#" onClick={() => setApproval(true)}>
+            Approve
+          </Link>
+        </span>
+      )}
+      <Link href="#">Simulate</Link>
+      {approval && (
+        <TransactionApproval
+          transaction={transaction}
+          onCancelApproval={() => setApproval(false)}
+          multiSigParams={multiSigParams}
+          onProposed={() => {
+            onRefresh();
+            setApproval(false);
+          }}
+        />
+      )}
+    </div>
   );
 }
 
-function Transactions(multiSigParams: MultiSigParams) {
+function TransactionApproval({
+  transaction,
+  multiSigParams,
+  onCancelApproval,
+    onProposed
+}: {
+  transaction: TMultiSigTransaction;
+  multiSigParams: MultiSigParams;
+  onCancelApproval: () => void;
+  onProposed: ()=>void;
+}) {
+  const { config } = usePrepareContractWrite({
+    address: multiSigParams.multiSig.address,
+    abi: multiSigParams.multiSigAbi,
+    functionName: "confirmTransaction",
+    args: [transaction.txIndex],
+  });
+  const { write, data } = useContractWrite(config);
+  const tx = useWaitForTransaction({ hash: data?.hash });
+  const { isLoading, isSuccess, isError } = tx;
+  const me = useAccount();
+
+  useEffect(()=>{
+    if(!isSuccess){
+      return;
+    }
+    fetch(`api/multisig/${multiSigParams.multiSig.address}/transaction`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(
+          {
+            hash: transaction.hash,
+            approvedBy: [...transaction.approvedBy, me.address]
+          } as TMultiSigTransaction,
+          BigIntReplacer,
+      ),
+    }).then(onProposed);
+  }, [isSuccess])
+
+  return (
+    <Modal
+      open
+      title="Approve TX"
+      onRequestClose={onCancelApproval}
+      primaryButtonText="Approve"
+      secondaryButtonText="Cancel"
+      primaryButtonDisabled={!write || isLoading}
+      onRequestSubmit={() => {
+        console.log("Approving TX...", write);
+        write?.();
+      }}
+    >
+      <div className="mb-1">
+        {transaction.txIndex}. {transaction.name}
+      </div>
+      <div className="mb-1">To: {transaction.to}</div>
+
+      <div className="mb-1">Value: {transaction.value.toString()}</div>
+
+      <div className="">
+        {multiSigParams.multiSig.owners.map((owner) => {
+          return transaction.approvedBy.indexOf(owner) >= 0 ? "✅" : "⬛️";
+        })}
+      </div>
+      {isSuccess}
+    </Modal>
+  );
+}
+
+function Transactions(multiSigParams: MultiSigParams & { onRefresh: ()=>void}) {
   return (
     <div>
       <h3>Transactions</h3>
       <ul>
         {multiSigParams.transactions?.map((tx, idx) => (
           <li key={idx}>
-            <Transaction transaction={tx} multiSigParams={multiSigParams} />
+            <Transaction transaction={tx} multiSigParams={multiSigParams} onRefresh={multiSigParams.onRefresh}/>
           </li>
         ))}
       </ul>

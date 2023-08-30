@@ -20,15 +20,15 @@ export async function POST(request: Request) {
 
 const t: TMultiSig[] = [
     {
-        name: 'testing!',
-        address: '0xaA7a9D32582692F157F4233F380b672fA161F3cD',
+        name: 'testic',
+        address: '0x7851131AA8F8d305dcc668462c88e33D0161c5ae',
         owners: [
-          '0x4469880099472dDDFD357ab305AD2821D6E4647f',
-          '0x4d97fa219bD42f42740659CA77d14e67d9eEd7E4',
-          '0xE58b9ee93700A616b50509C8292977FA7a0f8ce1'
+            '0x4469880099472dDDFD357ab305AD2821D6E4647f',
+            '0x4d97fa219bD42f42740659CA77d14e67d9eEd7E4',
+            '0xE58b9ee93700A616b50509C8292977FA7a0f8ce1'
         ],
         signaturesRequired: { type: 'BigNumber', hex: '0x02' }
-      }
+    }
 ];
 
 export async function GET() {

@@ -14,7 +14,8 @@ type TTransaction = {
     to: Address,
     value: number,
     name: string,
-    from?: Address
+    from?: Address,
+    hash: string
 }
 
-type TMultiSigTransaction = TTransaction & { txIndex: numbers }
+type TMultiSigTransaction = TTransaction & { txIndex: numbers, approvedBy: Address[] }

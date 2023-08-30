@@ -9,7 +9,7 @@ const config: HardhatUserConfig = {
     defaultNetwork: "tenderly",
     networks: {
         tenderly: {
-            url: "https://rpc.vnet.tenderly.co/devnet/mini-safe/46524e3a-0054-4221-bdff-a520dd7725fa",
+      url: "https://rpc.vnet.tenderly.co/devnet/mini-safe/c6d9f5ce-81ba-497f-bd36-2105663c12f9",
         },
     },
     tenderly: {
@@ -23,10 +23,31 @@ task("verifyExistingMS", "Verifies deployed MultiSigWallet instance")
     .setAction(async (args, hre) => {
         await hre.run("compile");
         console.log("Verifying MS", args.address)
+
         // TODO: something wrong with verification:(
+
+        function timeout(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function sleep(fn, ...args) {
+            await timeout(1000);
+            return fn(...args);
+        }
+        console.log("Verifying regular")
         await hre.tenderly.verify({
             name: "MultiSigWallet",
             address: args.address
         })
+
+        await sleep(async () => {
+            console.log("Verifying timed out")
+            await hre.tenderly.verify({
+                name: "MultiSigWallet",
+                address: args.address
+            })
+        })
+
+
     })
 export default config;

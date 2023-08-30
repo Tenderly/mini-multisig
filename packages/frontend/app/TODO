@@ -1,0 +1,27 @@
+[x] DONE - build put TX to MS: TUE
+
+
+CAN'T - Build Show Tx Execution -> Simulation: TUE
+
+- Build Approve: WED
+- Build Decline: WED
+- Build showing approves: WED
+
+- Write tests: THU
+- Set Up CI: THU
+- Write workshop doc: THU, FRI
+- Set up a messup: FRI
+- Backend: fetch TX data (confirmations and stuff) from the blockchain
+- Backend: fetch MultiSig data (owners, TXs waiting etc) from the blockchain
+
+
+Know React/JS/Wagmi
+Know backend
+Know Hardhat
+
+
+- CI
+- Hardhat Tests
+- Backend Tests
+- Frontend Tests
+  - Functional E2E tests
