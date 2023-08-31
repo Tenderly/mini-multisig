@@ -4,7 +4,7 @@ type TMultiSig = {
     address: Address,
     owners: Address[]
     name: string,
-    signaturesRequired: { type: 'BigNumber', hex: string }
+    signaturesRequired: Number
 }
 
 type TData = `0x${string}`;
