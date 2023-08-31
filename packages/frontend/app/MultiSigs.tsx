@@ -5,23 +5,30 @@ import {
   TMultiSigTransaction,
   TTransaction,
 } from "@/types/MultiSig";
-import { Button, Form, TextArea, TextInput } from "carbon-components-react";
-import { Modal } from "carbon-components-react";
-
 import { BigNumber, ethers } from "ethers";
 import { ChangeEvent, useEffect, useState } from "react";
 import { Abi, Address } from "viem";
 import {
   useAccount,
-  useContractRead,
   useContractWrite,
-  useNetwork,
   usePrepareContractWrite,
   useWaitForTransaction,
 } from "wagmi";
 
-import React from "react";
-import { Link } from "@carbon/react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@radix-ui/react-label";
+
+import { Textarea } from "@/components/ui/textarea";
 
 const BigIntReplacer = (k: any, v: any) =>
   typeof v === "bigint" ? v.toString() : v;
@@ -171,48 +178,54 @@ function CreateMultiSig({
 
     console.log(logs, { contractAddress, owners, signaturesRequired });
   }, [isSuccess]);
-
   return (
-    <Modal
-      open
-      title="New MultiSig Wallet"
-      onRequestClose={onCancel}
-      primaryButtonText="Pick"
-      secondaryButtonText="Cancel"
-      primaryButtonDisabled={!write}
-      onRequestSubmit={() => {
-        console.log("writing...", write);
-        write?.();
-      }}
-    >
-      <Form>
-        <TextInput
-          name="name"
-          id="name"
-          labelText="MultiSig Name"
-          onChange={(e) =>
-            setMultiSig({ ...multiSig, name: e.target.value.trim() })
-          }
-        />
-        <TextArea
-          name="owners"
-          id="owners"
-          labelText="Owners"
-          value={DEFAULT_OWNERS}
-          onChange={(e) =>
-            setMultiSig({
-              ...multiSig,
-              owners: e.target.value.split("\n") as Address[],
-            })
-          }
-        />
-      </Form>
-      <Button disabled={!write || isLoading}>
-        {isLoading ? "Creating" : "Create Multisig"}
-      </Button>
-      {isSuccess && <strong>Created ${data?.hash}</strong>}
-      {isError && <strong> Errored out</strong>}
-    </Modal>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Create MutiSig</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w[512px]">
+        <DialogHeader>
+          <DialogTitle>Titleeee</DialogTitle>
+          <DialogDescription>
+            Make changes to your profile here. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <Input
+            name="name"
+            id="name"
+            placeholder="MultiSig Name"
+            onChange={(e) =>
+              setMultiSig({
+                ...multiSig,
+                name: e.target.value.trim(),
+              })
+            }
+          />
+
+          <Textarea
+            name="owners"
+            id="owners"
+            placeholder="Owners"
+            value={DEFAULT_OWNERS}
+            onChange={(e) =>
+              setMultiSig({
+                ...multiSig,
+                owners: e.target.value.split("\n") as Address[],
+              })
+            }
+          />
+        </div>
+        <DialogFooter>
+          <Button disabled={!write || isLoading} onClick={() => write?.()}>
+            {isLoading ? "Creating" : "Create Multisig"}
+          </Button>
+
+          {isSuccess && <strong>Created ${data?.hash}</strong>}
+          {isError && <strong> Errored out</strong>}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -275,33 +288,45 @@ function TxOverview({
           ...transaction,
           hash: data?.hash,
           txIndex: createdEvent.args.txIndex.toNumber(),
-          approvedBy: []
+          approvedBy: [],
         } as TMultiSigTransaction,
         BigIntReplacer,
       ),
     }).then(onProposed);
   }, [isSuccess]);
   return (
-    <Modal
-      open
-      onRequestClose={onCancel}
-      onRequestSubmit={() => write?.()}
-      primaryButtonDisabled={!write}
-      primaryButtonText="Propose"
-      secondaryButtonText="Cancel"
-    >
-      <ul>
-        <li>name: {transaction.name}</li>
-        <li>to: {transaction.to}</li>
-        <li>from: {transaction.from}</li>
-        <li>value: {transaction.value.toString()}</li>
-      </ul>
-      {/*<Button disabled={!write || isLoading} onClick={() => write?.()}>*/}
-      {/*  Submit*/}
-      {/*</Button>*/}
-      {isSuccess && "Success!"}
-      {isError && "Error!"}
-    </Modal>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">Review</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Review Proposal</DialogTitle>
+          <DialogDescription>
+            Make changes to your profile here. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
+
+        <ul>
+          <li>name: {transaction.name}</li>
+          <li>to: {transaction.to}</li>
+          <li>from: {transaction.from}</li>
+          <li>value: {transaction.value.toString()}</li>
+        </ul>
+
+        {isSuccess && "Success!"}
+        {isError && "Error!"}
+        <DialogFooter>
+          <Button
+            disabled={!write || isLoading || isError || isSuccess}
+            onClick={() => write?.()}
+          >
+            Propose
+          </Button>
+          <Button onClick={onCancel}>Cancel</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -309,13 +334,15 @@ function SubmitTransaction({
   multiSig,
   multiSigAbi,
   onSubmitted,
-}: MultiSigParams & { onSubmitted: () => void }) {
-  const network = useNetwork();
-  const TXZERO = {
-    to: "0x0" as TData,
+}: MultiSigParams & {
+  onSubmitted: () => void;
+}) {
+  const TXZERO: TTransaction = {
+    to: "0x0" as Address,
     data: "0x0" as TData,
     value: 111,
     name: "testTx",
+    hash: "",
   };
   const [proposing, setProposing] = useState(false);
   const [review, setReview] = useState(false);
@@ -333,80 +360,69 @@ function SubmitTransaction({
   };
   return (
     <div>
-      {!proposing && !review && (
-        <Button onClick={() => setProposing(true)}>Propose TX</Button>
-      )}
-      <Modal
-        open={proposing || review}
-        title={`New TX for ${multiSig.address}`}
-        onRequestClose={() => {
-          setProposing(false);
-          setReview(false);
-        }}
-        primaryButtonText="Pick"
-        secondaryButtonText="Cancel"
-        // primaryButtonDisabled={!write}
-        onRequestSubmit={() => {
-          setReview(true);
-          setProposing(false);
-        }}
-      >
-        {proposing && (
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button onClick={() => setProposing(true)}>Propose TX</Button>
+        </DialogTrigger>
+
+        <DialogContent>
+          <DialogHeader>Propose TX</DialogHeader>
           <div>
-            <TextInput
-              labelText="name"
+            <Label htmlFor="name">Name</Label>
+            <Input
+              placeholder="name"
               id="name"
               onChange={(e) => updateTx("name", getEventVal(e))}
               value={tx.name}
             />
-            <TextInput
-              labelText="to"
-              id="to"
-              onChange={(e) => updateTx("to", getEventVal(e))}
-              value={tx.to}
-            />
-            <TextInput
-              labelText="data"
+            <Label htmlFor="data">To</Label>
+
+            <Input
+              placeholder="data"
               id="data"
               onChange={(e) => updateTx("data", getEventVal(e))}
               value={tx.data}
               // TODO: add odd lenght validation
             />
 
-            <TextInput
-              labelText="value"
+            <Label htmlFor="to">Data</Label>
+
+            <Input
+              placeholder="tp"
+              id="tp"
+              onChange={(e) => updateTx("tp", getEventVal(e))}
+              value={tx.to}
+              // TODO: add odd lenght validation
+            />
+
+            <Label htmlFor="value">Value</Label>
+            <Input
+              placeholder="value"
               id="value"
+              name="value"
+              type="text"
               onChange={(e) =>
                 updateTx("value", BigNumber.from(getEventVal(e)))
               }
               value={tx.value.toString()}
             />
-            {!review && (
-              <Button
-                onClick={() => {
-                  setReview(true);
-                  setProposing(false);
-                }}
-              >
-                Review
-              </Button>
-            )}
-          </div>
-        )}
-      </Modal>
 
-      {review && (
-        <TxOverview
-          transaction={tx}
-          multiSig={multiSig}
-          onProposed={() => {
-            reset();
-            onSubmitted();
-          }}
-          multiSigAbi={multiSigAbi}
-          onCancel={reset}
-        />
-      )}
+          </div>
+          <DialogFooter>
+                  <TxOverview
+                      transaction={tx}
+                      multiSig={multiSig}
+                      onProposed={() => {
+                          reset();
+                          onSubmitted();
+                      }}
+                      multiSigAbi={multiSigAbi}
+                      onCancel={reset}
+                  />
+            <Button onClick={reset}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -414,11 +430,11 @@ function SubmitTransaction({
 function Transaction({
   transaction,
   multiSigParams,
-                       onRefresh
+  onRefresh,
 }: {
   transaction: TMultiSigTransaction;
   multiSigParams: MultiSigParams;
-  onRefresh:()=>void
+  onRefresh: () => void;
 }) {
   const me = useAccount();
   const [approval, setApproval] = useState(false);
@@ -451,12 +467,12 @@ function Transaction({
 
       {transaction.approvedBy.indexOf(me.address) == -1 && (
         <span className="mr-2">
-          <Link href="#" onClick={() => setApproval(true)}>
+          <a href="#" onClick={() => setApproval(true)}>
             Approve
-          </Link>
+          </a>
         </span>
       )}
-      <Link href="#">Simulate</Link>
+      <a href="#">Simulate</a>
       {approval && (
         <TransactionApproval
           transaction={transaction}
@@ -476,12 +492,12 @@ function TransactionApproval({
   transaction,
   multiSigParams,
   onCancelApproval,
-    onProposed
+  onProposed,
 }: {
   transaction: TMultiSigTransaction;
   multiSigParams: MultiSigParams;
   onCancelApproval: () => void;
-  onProposed: ()=>void;
+  onProposed: () => void;
 }) {
   const { config } = usePrepareContractWrite({
     address: multiSigParams.multiSig.address,
@@ -494,61 +510,69 @@ function TransactionApproval({
   const { isLoading, isSuccess, isError } = tx;
   const me = useAccount();
 
-  useEffect(()=>{
-    if(!isSuccess){
+  useEffect(() => {
+    if (!isSuccess) {
       return;
     }
     fetch(`api/multisig/${multiSigParams.multiSig.address}/transaction`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
-          {
-            hash: transaction.hash,
-            approvedBy: [...transaction.approvedBy, me.address]
-          } as TMultiSigTransaction,
-          BigIntReplacer,
+        {
+          hash: transaction.hash,
+          approvedBy: [...transaction.approvedBy, me.address],
+        } as TMultiSigTransaction,
+        BigIntReplacer,
       ),
     }).then(onProposed);
-  }, [isSuccess])
+  }, [isSuccess]);
 
   return (
-    <Modal
-      open
-      title="Approve TX"
-      onRequestClose={onCancelApproval}
-      primaryButtonText="Approve"
-      secondaryButtonText="Cancel"
-      primaryButtonDisabled={!write || isLoading}
-      onRequestSubmit={() => {
-        console.log("Approving TX...", write);
-        write?.();
-      }}
-    >
-      <div className="mb-1">
-        {transaction.txIndex}. {transaction.name}
-      </div>
-      <div className="mb-1">To: {transaction.to}</div>
+    <>Dialog</>
+    // <Dialog
+    //   open
+    //   onRequestClose={onCancelApproval}
+    //   primaryButtonText="Approve"
+    //   secondaryButtonText="Cancel"
+    //   primaryButtonDisabled={!write || isLoading}
+    //   onRequestSubmit={() => {
+    //     console.log("Approving TX...", write);
+    //     write?.();
+    //   }}
+    // >
+    //   <div className="mb-1">
+    //     {transaction.txIndex}. {transaction.name}
+    //   </div>
+    //   <div className="mb-1">To: {transaction.to}</div>
 
-      <div className="mb-1">Value: {transaction.value.toString()}</div>
+    //   <div className="mb-1">Value: {transaction.value.toString()}</div>
 
-      <div className="">
-        {multiSigParams.multiSig.owners.map((owner) => {
-          return transaction.approvedBy.indexOf(owner) >= 0 ? "✅" : "⬛️";
-        })}
-      </div>
-      {isSuccess}
-    </Modal>
+    //   <div className="">
+    //     {multiSigParams.multiSig.owners.map((owner) => {
+    //       return transaction.approvedBy.indexOf(owner) >= 0 ? "✅" : "⬛️";
+    //     })}
+    //   </div>
+    //   {isSuccess}
+    // </Dialog>
   );
 }
 
-function Transactions(multiSigParams: MultiSigParams & { onRefresh: ()=>void}) {
+function Transactions(
+  multiSigParams: MultiSigParams & {
+    onRefresh: () => void;
+  },
+) {
   return (
     <div>
       <h3>Transactions</h3>
       <ul>
         {multiSigParams.transactions?.map((tx, idx) => (
           <li key={idx}>
-            <Transaction transaction={tx} multiSigParams={multiSigParams} onRefresh={multiSigParams.onRefresh}/>
+            <Transaction
+              transaction={tx}
+              multiSigParams={multiSigParams}
+              onRefresh={multiSigParams.onRefresh}
+            />
           </li>
         ))}
       </ul>
@@ -583,21 +607,16 @@ export default function MultiSigs({
             {multiSigs.map((it) =>
               MultiSigListItem(it, () => setSelected(it), it == selected),
             )}
-            {!creating && (
-              <Button onClick={() => setCreating(true)}>Create MultiSig</Button>
-            )}
-            {creating && (
-              <CreateMultiSig
-                multiSigFactoryAddress={multiSigFactoryAddress}
-                multiSigFactoryAbi={abi}
-                onCreated={() => {
-                  console.log("Created!");
-                  setCreating(false);
-                  reloadMultiSigs();
-                }}
-                onCancel={() => setCreating(false)}
-              />
-            )}
+            <CreateMultiSig
+              multiSigFactoryAddress={multiSigFactoryAddress}
+              multiSigFactoryAbi={abi}
+              onCreated={() => {
+                console.log("Created!");
+                setCreating(false);
+                reloadMultiSigs();
+              }}
+              onCancel={() => setCreating(false)}
+            />
           </div>
         </div>
         <div>
