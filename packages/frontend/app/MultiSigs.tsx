@@ -30,6 +30,7 @@ import {Label} from "@radix-ui/react-label";
 
 import {Textarea} from "@/components/ui/textarea";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
+import {Check} from "lucide-react";
 
 const BigIntReplacer = (k: any, v: any) =>
     typeof v === "bigint" ? v.toString() : v;
@@ -46,6 +47,7 @@ function MultiSigListItem(
             // className={`hover:bg-blue-50 ${selected ? "bg-blue-50" : ""}`}
             key={multiSig.address}
             data-testid={`ms-multisig-btn-${multiSig.name}`}
+            variant="ghost"
         >
             {multiSig.name} {multiSig.address}
         </Button>
@@ -396,7 +398,7 @@ function SubmitTransaction({
                         {!review && <Button onClick={() => setReview(true)} type="button">Review</Button>}
                         {review && <Button onClick={() => setTriggerSend((true))} disabled={!sendable}
                                            type="submit">Send</Button>}
-                        <Button onClick={() => (review ? setReview(false) : reset())} type="reset">
+                        <Button onClick={() => (review ? setReview(false) : reset())} type="reset" variant={review ? 'outline' : 'destructive'}>
                             {review ? "Modify" : "Cancel"}
                         </Button>
                     </DialogFooter>
@@ -443,7 +445,8 @@ function Transaction({
                             );
                         })}
                     </div>
-                    <Button href="#" onClick={() => setApproval(true)}>
+                    <Button href="#" onClick={() => setApproval(true)} variant="outline">
+                        <Check className='mr-1 h-3 w-4' />
                         Approve
                     </Button>
                     {approval && <TransactionApproval
@@ -734,7 +737,7 @@ function CreateMultiSigDialog({
                         }}>Modify</Button>
                     )}
                     {!reviewing && (
-                        <Button onClick={reset}>Cancel</Button>
+                        <Button onClick={reset} variant="destructive">Cancel</Button>
                     )}
 
                 </DialogFooter>
