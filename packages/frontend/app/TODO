@@ -3,13 +3,14 @@
 
 CAN'T - Build Show Tx Execution -> Simulation: TUE
 
-- Build Approve: WED
-- Build Decline: WED
-- Build showing approves: WED
+[x] Build Approve: WED
+[-] Build Decline: WED NAH
+[x] Build showing approves: WED
 
 - Write tests: THU
 - Set Up CI: THU
 - Write workshop doc: THU, FRI
+
 - Set up a messup: FRI
 - Backend: fetch TX data (confirmations and stuff) from the blockchain
 - Backend: fetch MultiSig data (owners, TXs waiting etc) from the blockchain

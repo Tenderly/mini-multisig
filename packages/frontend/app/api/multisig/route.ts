@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     } else {
         console.log("Already existing Multisig")
     }
-    console.log("Verifying MultiSig at", req.address)
+    console.log("Verifying MultiSig at:", req.address)
 
 
     return NextResponse.json({message: "OK"});
@@ -23,15 +23,25 @@ export async function POST(request: Request) {
 
 const t: TMultiSig[] = [
     {
-        name: 'first multisig',
-        address: '0x80925399c1332cAE074Ebce591C58a4cf34E3D4d',
+        name: 'najjaci',
+        address: '0x13dA60f271c1b413790C07404C04c14424d90330',
         owners: [
-            '0x4469880099472dDDFD357ab305AD2821D6E4647f',
-            '0x4d97fa219bD42f42740659CA77d14e67d9eEd7E4',
-            '0xE58b9ee93700A616b50509C8292977FA7a0f8ce1'
+          '0x13dA60f271c1b413790C07404C04c14424d90330',
+          '0x4469880099472dDDFD357ab305AD2821D6E4647f',
+          '0xE58b9ee93700A616b50509C8292977FA7a0f8ce1'
         ],
         signaturesRequired: 2
-    }
+      },
+      {
+        name: 'fake',
+        address: '0xE58b9ee93700A616b50509C8292977FA7a0f8ce1',
+        owners: [
+          '0x4469880099472dDDFD357ab305AD2821D6E4647f',
+          '0x4d97fa219bD42f42740659CA77d14e67d9eEd7E4',
+          '0xE58b9ee93700A616b50509C8292977FA7a0f8ce1'
+        ],
+        signaturesRequired: 2
+      }
 ];
 
 export async function GET() {

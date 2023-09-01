@@ -5,7 +5,7 @@ import {
     TMultiSigTransaction,
     TTransaction,
 } from "@/types/MultiSig";
-import {ethers} from "ethers";
+import {BigNumber, ethers} from "ethers";
 import {ChangeEvent, forwardRef, useEffect, useImperativeHandle, useState} from "react";
 import {Abi, Address} from "viem";
 import {
@@ -45,6 +45,7 @@ function MultiSigListItem(
             onClick={select}
             // className={`hover:bg-blue-50 ${selected ? "bg-blue-50" : ""}`}
             key={multiSig.address}
+            data-testid={`ms-multisig-btn-${multiSig.name}`}
         >
             {multiSig.name} {multiSig.address}
         </Button>
@@ -76,7 +77,7 @@ function MultiSig({multiSig, multiSigAbi}: MultiSigParams) {
             .then((r) => r.json())
             .then(setTransactions);
     };
-    useEffect(loadTranasctions, []);
+    useEffect(loadTranasctions, [multiSig.address]);
     return (
         <div className="space-y-2">
             <h4 className="text-xl">
@@ -176,7 +177,7 @@ function MultiSigCreateReview({
                     name: multiSig.name,
                     address: contractAddress,
                     owners,
-                    signaturesRequired,
+                    signaturesRequired: (signaturesRequired as BigNumber).toNumber(),
                 }),
             }).then(onCreated);
         }, 1000);
@@ -331,7 +332,7 @@ function SubmitTransaction({
                 }
             }}>
                 <DialogTrigger asChild>
-                    <Button onClick={() => setProposing(true)}>Propose TX</Button>
+                    <Button onClick={() => setProposing(true)} data-testid={"ms-propose-tx-btn"}>Propose TX</Button>
                 </DialogTrigger>
 
                 <DialogContent>
@@ -651,7 +652,7 @@ function CreateMultiSigDialog({
             }
         }} open={creating}>
             <DialogTrigger asChild>
-                <Button onClick={() => setCreating(true)}>Create MutiSig</Button>
+                <Button onClick={() => setCreating(true)} data-testid={"ms-create-multisig"}>Create MutiSig</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w[512px]">
                 <DialogHeader>
@@ -678,6 +679,7 @@ function CreateMultiSigDialog({
                             name="signaturesRequired"
                             id="name"
                             type="number"
+                            data-testid="ms-input-signatures-required"
                             placeholder="Signatures required"
                             onChange={(e) =>
                                 setMultiSig({
@@ -707,7 +709,10 @@ function CreateMultiSigDialog({
                     <MultiSigCreateReview
                         multiSigFactoryAddress={multiSigFactoryAddress}
                         multiSigFactoryAbi={multiSigFactoryAbi}
-                        onCreated={() => setCreating(false)}
+                        onCreated={() => {
+                            setCreating(false);
+                            reloadMultiSigs();
+                        }}
                         multiSig={multiSig}
                         triggerCreate={triggerCreate}
                         onCanCreate={setCanCreate}
@@ -715,12 +720,12 @@ function CreateMultiSigDialog({
                 )}
                 <DialogFooter>
                     {!reviewing && (
-                        <Button disabled={reviewing} onClick={() => setReviewing(true)}>
+                        <Button disabled={reviewing} onClick={() => setReviewing(true)} data-testid="ms-multisig-review">
                             Review
                         </Button>
                     )}
                     {reviewing && (
-                        <Button onClick={() => setTriggerCreate(true)} disabled={!canCreate}>Create</Button>
+                        <Button onClick={() => setTriggerCreate(true)} disabled={!canCreate} data-testid="ms-multisig-create">Create</Button>
                     )}
                     {reviewing && (
                         <Button onClick={() => {

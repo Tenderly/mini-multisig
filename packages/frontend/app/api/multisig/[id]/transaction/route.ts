@@ -3,24 +3,16 @@ import {NextRequest, NextResponse} from "next/server";
 import {Address} from "viem";
 
 const txns: Record<Address, TMultiSigTransaction[]> = {
-    "0x80925399c1332cAE074Ebce591C58a4cf34E3D4d": [{
+    "0x13dA60f271c1b413790C07404C04c14424d90330": [
+        {
         to: '0x4469880099472dDDFD357ab305AD2821D6E4647f',
         data: '0x0',
         value: 111,
         name: 'testTx',
-        hash: '0x4e456ce1ebd302847c10548f8d0e8cbdee2ea5a4b60feeec409508ad7a6a8f53',
-        txIndex: 1,
+        hash: '0xf97d392c9fd45da5f1829ee7e4771c2f5a700cfa8835e2ec6b7cc64d46a0e007',
+        txIndex: 0,
         approvedBy: []
-    },
-        {
-            to: '0x80925399c1332cAE074Ebce591C58a4cf34E3D4d',
-            data: '0x0',
-            value: 44444,
-            name: 'Another Test Tx',
-            hash: '0x4e456ce1ebd302847c10548f8d0e8cbdee2ea5a4b60feeec409508ad7a6a8f51',
-            txIndex: 1,
-            approvedBy: ['0x4d97fa219bD42f42740659CA77d14e67d9eEd7E4']
-        }
+      }
     ]
 };
 
@@ -28,9 +20,10 @@ type Params = { params: { id: Address } };
 
 export async function GET(req: NextRequest, {params}: Params) {
     const {id} = params;
-    console.log("Getting transactions for ", id);
+    const transactions = txns[id] ? txns[id].map((tx) => ({...tx, value: `${tx.value}`})) : [];
+    console.log("Getting transactions for ", id, transactions);
     return NextResponse.json(
-        txns[id] ? txns[id].map((tx) => ({...tx, value: `${tx.value}`})) : [],
+        transactions
     );
     // TODO: pull in approvers map
 }
