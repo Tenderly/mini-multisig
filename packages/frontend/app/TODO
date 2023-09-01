@@ -4,13 +4,15 @@
 CAN'T - Build Show Tx Execution -> Simulation: TUE
 
 [x] Build Approve: WED
-[-] Build Decline: WED NAH
+[x] Build Decline: WED NAH
 [x] Build showing approves: WED
 
-- Write tests: THU
-- Set Up CI: THU
-- Write workshop doc: THU, FRI
-
+[-] Write tests: THU
+[-] Add a test assetion to the test FRI
+- Set Up CI: FRI 
+- Write workshop doc: FRI
+[-] Invite support and devnet team: FRI
+   
 - Set up a messup: FRI
 - Backend: fetch TX data (confirmations and stuff) from the blockchain
 - Backend: fetch MultiSig data (owners, TXs waiting etc) from the blockchain

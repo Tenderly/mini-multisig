@@ -21,7 +21,7 @@ type Params = { params: { id: Address } };
 export async function GET(req: NextRequest, {params}: Params) {
     const {id} = params;
     const transactions = txns[id] ? txns[id].map((tx) => ({...tx, value: `${tx.value}`})) : [];
-    console.log("Getting transactions for ", id, transactions);
+    // console.log("Getting transactions for ", id, transactions);
     return NextResponse.json(
         transactions
     );
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest, {params}: Params) {
         txns[params.id] = [];
     }
     txns[params.id].push({...tx, approvedBy: []});
-    console.log("POSTING", tx, params.id);
+    console.log("Storing transaction in multiSig "+params.id , tx, );
     return NextResponse.json({message: "OK"});
 }
 

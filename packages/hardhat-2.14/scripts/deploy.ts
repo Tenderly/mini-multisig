@@ -15,7 +15,7 @@ async function main() {
   const MultiSigFactoryAbi = JSON.parse(readFileSync("artifacts/contracts/MultiSigFactory.sol/MultiSigFactory.json").toString()).abi;
   const MultiSigAbi = JSON.parse(readFileSync("artifacts/contracts/MultiSigWallet.sol/MultiSigWallet.json").toString()).abi;
   const multiSigWalletBuildInfo = JSON.parse(readFileSync("artifacts/contracts/MultiSigWallet.sol/MultiSigWallet.dbg.json").toString()).buildInfo
-  // ../../build-info/10733e5741f0e4122f76e576f7180e1c.json
+  
   const multiSigWalletBuildInfoRel = multiSigWalletBuildInfo.slice(multiSigWalletBuildInfo.indexOf("build-info"))
   console.log("Build Info", multiSigWalletBuildInfoRel);
 

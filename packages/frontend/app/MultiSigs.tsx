@@ -422,7 +422,7 @@ function Transaction({
 
     return (
         <Accordion type="single" collapsible>
-            <AccordionItem value="item-1">
+            <AccordionItem value="item-1" data-testid={`ms-transaction-${transaction.txIndex}`}>
                 <AccordionTrigger>
                     {transaction.txIndex}. {transaction.name} {transaction.approvedBy.length} / {multiSigParams.multiSig.signaturesRequired}
                 </AccordionTrigger>
@@ -445,7 +445,7 @@ function Transaction({
                             );
                         })}
                     </div>
-                    <Button href="#" onClick={() => setApproval(true)} variant="outline">
+                    <Button href="#" onClick={() => setApproval(true)} variant="outline" data-testid="ms-tx-approve">
                         <Check className='mr-1 h-3 w-4' />
                         Approve
                     </Button>
@@ -535,7 +535,7 @@ function TransactionApproval({
                     <Button disabled={!write && !prepareContractWriteError} onClick={() => {
                         console.log("Approving TX...", write);
                         write?.();
-                    }}>
+                    }} data-testid='ms-tx-approve-confirm'>
                         Approve
                     </Button>
                     <Button onClick={onCancelApproval}>Cancel</Button>
