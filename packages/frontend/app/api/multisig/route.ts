@@ -22,6 +22,7 @@ export async function POST(request: Request) {
 }
 
 const t: TMultiSig[] = [
+
 ];
 
 export async function GET() {

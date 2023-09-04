@@ -7,11 +7,11 @@ import {
 } from "@/types/MultiSig";
 import {BigNumber, ethers} from "ethers";
 import {ChangeEvent, forwardRef, useEffect, useImperativeHandle, useState} from "react";
-import {Abi, Address} from "viem";
+import {Abi, Address, parseEther} from "viem";
 import {
-    useAccount,
+    useAccount, useBalance,
     useContractWrite,
-    usePrepareContractWrite,
+    usePrepareContractWrite, usePrepareSendTransaction, useSendTransaction,
     useWaitForTransaction,
 } from "wagmi";
 
@@ -70,6 +70,8 @@ function MultiSig({multiSig, multiSigAbi}: MultiSigParams) {
     const [transactions, setTransactions] = useState(
         [] as TMultiSigTransaction[],
     );
+    const {data, isSuccess, isError} = useBalance({address: multiSig.address})
+    const [funding, setFunding] = useState(false)
     const loadTranasctions = () => {
         console.log("Loading TXs");
         fetch(`api/multisig/${multiSig.address}/transaction`, {
@@ -82,19 +84,23 @@ function MultiSig({multiSig, multiSigAbi}: MultiSigParams) {
     return (
         <div className="space-y-2">
             <h4 className="text-xl">
-                {multiSig.name}
+                {multiSig.name} ({data?.formatted} {data?.symbol})
             </h4>
             <code><small>{multiSig.address}</small></code>
+            <div>
+                <Button onClick={() => setFunding(true)} variant="outline" data-testid="ms-fund-btn">Fund</Button>
+            </div>
             <SubmitTransaction
                 multiSig={multiSig}
                 multiSigAbi={multiSigAbi}
                 onSubmitted={loadTranasctions}
             />
+            {funding && <FundMultiSig multiSig={multiSig} onCancel={() => setFunding(false)}/>}
             <h4 className="text-xl">Owners:{" "}</h4>
             <ul>
                 {multiSig.owners.map((ownerAddress) => {
                     return <li key={ownerAddress}><small>{ownerAddress}</small></li>;
-                })}
+                })}x
             </ul>
             <br/>
             Number of signers:{" "}
@@ -110,6 +116,31 @@ function MultiSig({multiSig, multiSigAbi}: MultiSigParams) {
     );
 }
 
+function FundMultiSig({multiSig, onCancel}: { multiSig: TMultiSig, onCancel: () => void }) {
+    const [amount, setAmount] = useState(0.1);
+    const {config, error} = usePrepareSendTransaction(
+        {
+            to: multiSig.address,
+            value: parseEther(amount.toString())
+        }
+    )
+    const {sendTransaction} = useSendTransaction(config)
+    return <Dialog open onOpenChange={open => {
+        if (!open) {
+            onCancel()
+        }
+    }}>
+        <DialogContent>
+            <DialogHeader><h2>Funding multisig</h2> <small>{multiSig.address}</small></DialogHeader>
+            <Input type="number" value={amount} onChange={e => setAmount(Number.parseFloat(e.target.value))}/>
+            <DialogFooter>
+                <Button disabled={!sendTransaction} onClick={() => sendTransaction?.()} data-testid="ms-fund-confirm-btn">Fund</Button>
+                <Button onClick={onCancel}>Cancel</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+}
+
 function MultiSigCreateReview({
                                   multiSigFactoryAddress,
                                   multiSigFactoryAbi,
@@ -117,14 +148,17 @@ function MultiSigCreateReview({
                                   multiSig,
                                   onCanCreate,
                                   triggerCreate
-                              }: {
-    multiSigFactoryAddress: Address;
-    multiSigFactoryAbi: Abi;
-    onCreated: () => void;
-    multiSig: TMultiSig;
-    triggerCreate: boolean;
-    onCanCreate: (can: boolean) => void;
-}) {
+                              }
+                                  :
+                                  {
+                                      multiSigFactoryAddress: Address;
+                                      multiSigFactoryAbi: Abi;
+                                      onCreated: () => void;
+                                      multiSig: TMultiSig;
+                                      triggerCreate: boolean;
+                                      onCanCreate: (can: boolean) => void;
+                                  }
+) {
     const {config} = usePrepareContractWrite({
         address: multiSigFactoryAddress,
         abi: multiSigFactoryAbi,
@@ -541,7 +575,7 @@ function TransactionExecution({
             <DialogFooter>
                 <Button disabled={!write} onClick={() => {
                     write?.()
-                }}>Execute</Button>
+                }} data-testid="ms-tx-execute-btn">Execute</Button>
                 <Button variant="secondary" onClick={onCancel}>Cancel</Button>
             </DialogFooter>
         </DialogContent>
