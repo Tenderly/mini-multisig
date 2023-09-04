@@ -30,7 +30,7 @@ import {Label} from "@radix-ui/react-label";
 
 import {Textarea} from "@/components/ui/textarea";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
-import {Check} from "lucide-react";
+import {Check, Send} from "lucide-react";
 
 const BigIntReplacer = (k: any, v: any) =>
     typeof v === "bigint" ? v.toString() : v;
@@ -42,7 +42,6 @@ function MultiSigListItem(
 ) {
     return (
         <Button
-            href="#"
             onClick={select}
             // className={`hover:bg-blue-50 ${selected ? "bg-blue-50" : ""}`}
             key={multiSig.address}
@@ -398,7 +397,8 @@ function SubmitTransaction({
                         {!review && <Button onClick={() => setReview(true)} type="button">Review</Button>}
                         {review && <Button onClick={() => setTriggerSend((true))} disabled={!sendable}
                                            type="submit">Send</Button>}
-                        <Button onClick={() => (review ? setReview(false) : reset())} type="reset" variant={review ? 'outline' : 'destructive'}>
+                        <Button onClick={() => (review ? setReview(false) : reset())} type="reset"
+                                variant={review ? 'outline' : 'destructive'}>
                             {review ? "Modify" : "Cancel"}
                         </Button>
                     </DialogFooter>
@@ -419,6 +419,7 @@ function Transaction({
 }) {
     const me = useAccount();
     const [approval, setApproval] = useState(false);
+    const [execution, setExecution] = useState(false);
 
     return (
         <Accordion type="single" collapsible>
@@ -433,22 +434,34 @@ function Transaction({
 
                     <div className="mb-3">Value: {transaction.value.toString()}</div>
 
-                    <div className="">
+                    <div>
                         {multiSigParams.multiSig.owners.map((owner) => {
                             return (
                                 <div className="mb-3" key={owner}>
-                                    {transaction.approvedBy.indexOf(owner) >= 0 ? "✅" : "⬛️"}{" "}
+                                    {transaction.approvedBy.map(approver => approver.toLowerCase()).indexOf(owner.toLowerCase()) >= 0 ? "✅" : "⬛️"}{" "}
                                     <code>
-                                        {owner == me.address ? <strong>{owner}</strong> : owner}
+                                        {owner.toLowerCase() == me.address?.toLowerCase() ?
+                                            <strong>{owner}</strong> : owner}
                                     </code>
                                 </div>
                             );
                         })}
                     </div>
-                    <Button href="#" onClick={() => setApproval(true)} variant="outline" data-testid="ms-tx-approve">
-                        <Check className='mr-1 h-3 w-4' />
-                        Approve
-                    </Button>
+
+                    <div>
+                        <Button onClick={() => setApproval(true)} variant="outline" data-testid="ms-tx-approve">
+                            <Check className='mr-1 h-3 w-4'/>
+                            Approve
+                        </Button>
+                        {transaction.approvedBy.length >= 0 &&
+                            <Button onClick={() => setExecution(true)} variant="outline" data-testid="ms-tx-approve"
+                                    className="mr-10">
+                                <Send className='mr-1 h-3 w-4'/>
+                                Execute
+                            </Button>
+                        }
+                    </div>
+
                     {approval && <TransactionApproval
                         transaction={transaction}
                         onCancelApproval={() => setApproval(false)}
@@ -458,10 +471,81 @@ function Transaction({
                             setApproval(false);
                         }}
                     />}
+
+                    {execution && <TransactionExecution
+                        transaction={transaction}
+                        onCancel={() => setExecution(false)}
+                        multiSigParams={multiSigParams}
+                        onExecuted={() => {
+                            onRefresh();
+                            setExecution(false);
+                        }}
+                    />}
+
                 </AccordionContent>
             </AccordionItem>
         </Accordion>
     )
+}
+
+function TransactionExecution({
+                                  transaction,
+                                  multiSigParams,
+                                  onExecuted,
+                                  onCancel
+                              }: { multiSigParams: MultiSigParams, transaction: TMultiSigTransaction, onExecuted: () => void, onCancel: () => void }) {
+    // Prepare TX
+    // Write TX
+    // post it's executed
+    const {config, error: prepareContractWriteError} = usePrepareContractWrite({
+        address: multiSigParams.multiSig.address,
+        abi: multiSigParams.multiSigAbi,
+        functionName: "executeTransaction",
+        args: [transaction.txIndex],
+    });
+
+    const {write, data, error} = useContractWrite(config);
+    const tx = useWaitForTransaction({hash: data?.hash});
+    const {isLoading, isSuccess, isError} = tx;
+    const me = useAccount();
+
+    useEffect(() => {
+        if (!isSuccess) {
+            console.error("Execute failed");
+            return;
+        }
+        fetch(`api/multisig/${multiSigParams.multiSig.address}/transaction`, {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(
+                {
+                    hash: transaction.hash,
+                    approvedBy: [...transaction.approvedBy, me.address],
+                    executedBy: me.address
+                } as TMultiSigTransaction,
+                BigIntReplacer,
+            ),
+        }).then(onExecuted);
+
+    }, [isSuccess])
+
+    return <Dialog open={true} onOpenChange={(open) => {
+        if (!open) {
+            onCancel();
+        }
+    }}>
+        <DialogContent>
+            <DialogHeader>Execute TX</DialogHeader>
+            {<div className="error-message">Can't execute</div>}
+            <TransactionReview transaction={transaction} multiSigParams={multiSigParams}/>
+            <DialogFooter>
+                <Button disabled={!write} onClick={() => {
+                    write?.()
+                }}>Execute</Button>
+                <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 }
 
 function TransactionApproval({
@@ -503,7 +587,7 @@ function TransactionApproval({
         }).then(onProposed);
     }, [isSuccess]);
 
-    useEffect(()=>{
+    useEffect(() => {
         console.log(prepareContractWriteError)
     }, [prepareContractWriteError])
 
@@ -512,24 +596,9 @@ function TransactionApproval({
             open={true}
             onOpenChange={open => !open && onCancelApproval()}
         >
-            {/*<DialogTrigger asChild>*/}
-            {/*    <Button>Approve TX</Button>*/}
-            {/*</DialogTrigger>*/}
-
             <DialogContent>
                 <DialogHeader>Approve TX</DialogHeader>
-                <div className="mb-1">
-                    {transaction.txIndex}. {transaction.name}
-                </div>
-                <div className="mb-1">To: {transaction.to}</div>
-
-                <div className="mb-1">Value: {transaction.value.toString()}</div>
-
-                <div className="">
-                    {multiSigParams.multiSig.owners.map((owner) => {
-                        return transaction.approvedBy.indexOf(owner) >= 0 ? "✅" : "⬛️";
-                    })}
-                </div>
+                <TransactionReview transaction={transaction} multiSigParams={multiSigParams}/>
                 {isSuccess}
                 <DialogFooter>
                     <Button disabled={!write && !prepareContractWriteError} onClick={() => {
@@ -545,6 +614,28 @@ function TransactionApproval({
     );
 }
 
+function TransactionReview({
+                               transaction,
+                               multiSigParams
+                           }: { transaction: TMultiSigTransaction, multiSigParams: MultiSigParams }) {
+    return (
+        <div>
+            <div className="mb-1">
+                {transaction.txIndex}. {transaction.name}
+            </div>
+            <div className="mb-1">To: {transaction.to}</div>
+
+            <div className="mb-1">Value: {transaction.value.toString()}</div>
+
+            <div className="">
+                {multiSigParams.multiSig.owners.map((owner) => {
+                    return transaction.approvedBy.map(approver => approver.toLowerCase()).indexOf(owner.toLowerCase()) >= 0 ? "✅" : "⬛️";
+                })}
+            </div>
+        </div>
+    )
+}
+
 function Transactions(
     multiSigParams: MultiSigParams & {
         onRefresh: () => void;
@@ -556,11 +647,11 @@ function Transactions(
             <ul>
                 {multiSigParams.transactions?.map((tx, idx) => (
                     // <li key={idx}>
-                        <Transaction key={tx.hash}
-                            transaction={tx}
-                            multiSigParams={multiSigParams}
-                            onRefresh={multiSigParams.onRefresh}
-                        />
+                    <Transaction key={tx.hash}
+                                 transaction={tx}
+                                 multiSigParams={multiSigParams}
+                                 onRefresh={multiSigParams.onRefresh}
+                    />
                     // </li>
                 ))}
             </ul>
@@ -723,12 +814,14 @@ function CreateMultiSigDialog({
                 )}
                 <DialogFooter>
                     {!reviewing && (
-                        <Button disabled={reviewing} onClick={() => setReviewing(true)} data-testid="ms-multisig-review">
+                        <Button disabled={reviewing} onClick={() => setReviewing(true)}
+                                data-testid="ms-multisig-review">
                             Review
                         </Button>
                     )}
                     {reviewing && (
-                        <Button onClick={() => setTriggerCreate(true)} disabled={!canCreate} data-testid="ms-multisig-create">Create</Button>
+                        <Button onClick={() => setTriggerCreate(true)} disabled={!canCreate}
+                                data-testid="ms-multisig-create">Create</Button>
                     )}
                     {reviewing && (
                         <Button onClick={() => {

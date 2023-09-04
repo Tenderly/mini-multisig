@@ -18,4 +18,4 @@ type TTransaction = {
     hash: string
 }
 
-type TMultiSigTransaction = TTransaction & { txIndex: numbers, approvedBy: Address[] }
+type TMultiSigTransaction = TTransaction & { txIndex: numbers, approvedBy: Address[], executedBy?: Address }
