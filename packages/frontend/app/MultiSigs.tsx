@@ -888,13 +888,14 @@ function CreateMultiSigDialog({
 }) {
   const [creating, setCreating] = useState(false);
   const DEFAULT_OWNERS = [
-    "0x4469880099472dDDFD357ab305AD2821D6E4647f",
-    "0x4d97fa219bD42f42740659CA77d14e67d9eEd7E4",
-    "0xE58b9ee93700A616b50509C8292977FA7a0f8ce1",
+    // TODO: for testing purposes, add your 2-3 addresses
+    "0xC305f4b9925b9eC6b3D0FCC42B7b22F1245A5011",
+    "0xdb623c0f74d4ed5af4b254327147c4ac7e5d3fac",
+    "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
   ].join("\n");
 
   const ZERO_MULTISIG: TMultiSig = {
-    owners: DEFAULT_OWNERS.split("\n"),
+    owners: DEFAULT_OWNERS.split("\n") as Address[],
     name: "first multisig",
     signaturesRequired: 2,
     address: "0x00000000000000000000",

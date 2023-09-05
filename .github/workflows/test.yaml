@@ -1,0 +1,39 @@
+name: Smart Contract CI
+
+on:
+  push:
+    branches:
+      - main
+      - ui-change
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Tenderly CLI
+        run: curl <https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh> | sudo sh
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: yarn install
+        working-directory: ./CI-project
+
+      - name: Run Hardhat Tests
+        run: yarn run test:devnet
+        working-directory: ./CI-project
+        env:
+          TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
+          TENDERLY_PROJECT_SLUG: 'mini-safe' # your project slug
+          TENDERLY_DEVNET_TEMPLATE: mini-safe' # your devnet template slug
+          TENDERLY_ACCOUNT_ID: 'nenad' # your username or organization name

@@ -3,18 +3,19 @@ import * as metamask from "@synthetixio/synpress/commands/metamask";
 import { expect, test } from "../fixtures";
 import { approveTx as approveTransactionInMetaMask } from "../metamask-extensions";
 
-type PageParams = { page: Page };
-type MultiSig = { name: string; owners: string[]; signaturesRequired: number };
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 const DEFAULT_OWNERS = [
-  "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+  // correspond to MM_ACCOUNT_1_PK, MM_ACCOUNT_2_PK, MM_ACCOUNT_3_PK
+  "0xC305f4b9925b9eC6b3D0FCC42B7b22F1245A5011",
+  "0xdb623c0f74d4ed5af4b254327147c4ac7e5d3fac",
   "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-  "0xE58b9ee93700A616b50509C8292977FA7a0f8ce1"
 ];
 
-const MM_ACCOUNT_3_PK =
-  "bd3a24f40aa009e82b67af2ce17c9e2c794f1958d802c9481bc551ef76e8f03f";
+type PageParams = { page: Page };
+type MultiSig = { name: string; owners: string[]; signaturesRequired: number };
 
 test("Test connecting another account", async ({ page }) => {
   await connectToTenderly({ page });
@@ -53,6 +54,8 @@ test("Test approving and executing a transaction", async ({ page }) => {
   await fundMultiSig(page);
 
   await executeTransaction(0, page);
+
+  // TODO: add assertions
 });
 
 async function fundMultiSig(page: Page) {
@@ -115,7 +118,6 @@ async function connectRainbowKitToMM({ page }: PageParams) {
   await metamask.acceptAccess({ allAccounts: true });
 }
 async function connectToTenderly({ page }: PageParams) {
-  await metamask.importAccount(MM_ACCOUNT_3_PK);
   await page.goto("http://localhost:3000/");
   await connectRainbowKitToMM({ page });
   // take the chain
