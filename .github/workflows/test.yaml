@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Install Tenderly CLI
-        run: curl <https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh> | sudo sh
+        run: curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sudo sh
 
       - name: Checkout code
         uses: actions/checkout@v3
