@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
-        working-directory: packages/hardhat
+        working-directory: packages/hardhat-2.14
 
       # - name: Install dependencies
       #   run: yarn install
