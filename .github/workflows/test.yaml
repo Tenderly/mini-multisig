@@ -25,10 +25,6 @@ jobs:
         with:
           node-version: 16
 
-      - name: Whoami
-        run: tenderly whoami
-        working-directory: .
-
       - name: Install dependencies
         run: yarn install
         working-directory: packages/hardhat-2.14
