@@ -1,11 +1,15 @@
 import * as metamask from "@synthetixio/synpress/commands/metamask";
 import * as playwright from "@synthetixio/synpress/commands/playwright";
-import { advancedPageElements, settingsPageElements } from "@synthetixio/synpress/pages/metamask/settings-page";
+import {
+  advancedPageElements,
+  settingsPageElements,
+} from "@synthetixio/synpress/pages/metamask/settings-page";
 // import {} from  "@synthetixio/synpress/pages/metamask/settings-page";
+import { Page } from "@playwright/test";
 
 export const deactivateCustomNonce = async (experimental: boolean) => {
-    await metamask.switchToMetamaskIfNotActive();
-    await metamask.goToAdvancedSettings();
+  await metamask.switchToMetamaskIfNotActive();
+  await metamask.goToAdvancedSettings();
   if (
     (await playwright
       .metamaskWindow()
@@ -26,10 +30,10 @@ export const deactivateCustomNonce = async (experimental: boolean) => {
   await metamask.switchToCypressIfNotActive();
 };
 
-export const approveTx = async({page}: {page: any}) => {
-    const notificationPage = await playwright.switchToMetamaskNotification()
-    return await playwright.waitAndClick(
-        '.page-container__footer .btn-primary:not([disabled])',
-        notificationPage
-      );
-}
+export const approveTx = async ({ page }: { page: Page }) => {
+  const notificationPage = await playwright.switchToMetamaskNotification();
+  return await playwright.waitAndClick(
+    ".page-container__footer .btn-primary:not([disabled])",
+    notificationPage,
+  );
+};

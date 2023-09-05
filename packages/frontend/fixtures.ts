@@ -47,13 +47,14 @@ export const test = base.extend<{
       network: "optimism",
       password: "Tester@1234",
       enableAdvancedSettings: true,
-    });
+  });
 
     await use(context);
 
     await context.close();
 
     await resetState();
+    
   },
 });
 
