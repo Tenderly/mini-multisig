@@ -38,6 +38,6 @@ jobs:
         working-directory: packages/hardhat-2.14
         env:
           TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_TOKEN }}
-          TENDERLY_PROJECT_SLUG: 'mini-safe' # your project slug
-          TENDERLY_DEVNET_TEMPLATE: mini-safe' # your devnet template slug
-          TENDERLY_ACCOUNT_ID: 'nenad' # your username or organization name
+          TENDERLY_PROJECT_SLUG: mini-safe # your project slug
+          TENDERLY_DEVNET_TEMPLATE: mini-safe # your devnet template slug
+          TENDERLY_ACCOUNT_ID: nenad # your username or organization name
