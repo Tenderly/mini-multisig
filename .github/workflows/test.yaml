@@ -27,13 +27,17 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
-        working-directory: ./CI-project
+        working-directory: packages/hardhat
+
+      # - name: Install dependencies
+      #   run: yarn install
+      #   working-directory: packages/frontend
 
       - name: Run Hardhat Tests
         run: yarn run test:devnet
-        working-directory: ./CI-project
+        working-directory: packages/hardhat
         env:
-          TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
+          TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_TOKEN }}
           TENDERLY_PROJECT_SLUG: 'mini-safe' # your project slug
           TENDERLY_DEVNET_TEMPLATE: mini-safe' # your devnet template slug
           TENDERLY_ACCOUNT_ID: 'nenad' # your username or organization name
