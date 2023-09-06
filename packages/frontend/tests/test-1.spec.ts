@@ -24,8 +24,9 @@ test.skip("Test connecting another account", async ({ page }) => {
 
 base("Connects too dapp", async ({ page }) => {
   await page.goto("http://localhost:3000/");
-  console.log("Dapp working right?");
+  console.log("Dapp is ON?");
   await expect(page.getByTestId("rk-connect-button")).toBeAttached();
+  console.log("Dapp is ON!");
 });
 
 test("Test approving and executing a transaction", async ({ page }) => {
