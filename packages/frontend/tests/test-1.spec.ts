@@ -23,7 +23,7 @@ test.skip("Test connecting another account", async ({ page }) => {
 });
 
 base.skip("Connects too dapp", async ({ page }) => {
-  await page.goto("http://localhost:3000/");
+  await page.goto("http://127.0.0.1:3000/");
   console.log("Dapp is ON?");
   await expect(page.getByTestId("rk-connect-button")).toBeAttached();
   console.log("Dapp is ON!");
@@ -127,7 +127,7 @@ async function connectRainbowKitToMM({ page }: PageParams) {
   await metamask.acceptAccess({ allAccounts: true });
 }
 async function connectToTenderly({ page }: PageParams) {
-  await page.goto("http://localhost:3000/");
+  await page.goto("http://127.0.0.1:3000/");
   await expect(page.getByTestId("rk-connect-button")).toBeAttached();
   console.log("Connecting to metamask and adding Tenderly Devnet");
   await connectRainbowKitToMM({ page });
