@@ -120,6 +120,7 @@ async function proposeTransaction(
 }
 
 async function connectRainbowKitToMM({ page }: PageParams) {
+  await metamask.closePopupAndTooltips();
   await page.getByTestId("rk-connect-button").click();
   await page.getByTestId("rk-wallet-option-metaMask").click();
   await metamask.switchToMetamaskIfNotActive();
