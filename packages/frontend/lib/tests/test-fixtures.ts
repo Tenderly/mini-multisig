@@ -34,7 +34,7 @@ export const test = base.extend<{
 
     // launch browser
     const context = await chromium.launchPersistentContext("", {
-      headless: !!process.env.HEADLESS_MODE,
+      headless: false,
       args: browserArgs,
     });
 
