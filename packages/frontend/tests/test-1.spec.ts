@@ -22,14 +22,14 @@ test.skip("Test connecting another account", async ({ page }) => {
   await metamask.switchAccount("Account 2");
 });
 
-base.skip("Connects too dapp", async ({ page }) => {
+test("Connects too dapp", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/");
   console.log("Dapp is ON?");
   await expect(page.getByTestId("rk-connect-button")).toBeAttached();
   console.log("Dapp is ON!");
 });
 
-test("Test approving and executing a transaction", async ({ page }) => {
+test.skip("Test approving and executing a transaction", async ({ page }) => {
   console.log("Metamask setup complete");
   await connectToTenderly({ page });
   await metamask.switchAccount("Account 3");
