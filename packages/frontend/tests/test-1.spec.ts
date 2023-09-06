@@ -2,7 +2,7 @@ import { Page } from "@playwright/test";
 import * as metamask from "@synthetixio/synpress/commands/metamask";
 import { expect, test } from "../fixtures";
 import { approveTx as approveTransactionInMetaMask } from "../metamask-extensions";
-
+import { test as base, chromium, type BrowserContext } from "@playwright/test";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -23,7 +23,13 @@ test.skip("Test connecting another account", async ({ page }) => {
   await metamask.switchAccount("Account 2");
 });
 
-test("Test approving and executing a transaction", async ({ page }) => {
+base("Connects too dapp", async ({ page }) => {
+  await page.goto("http://localhost:3000/");
+  console.log("Connecting to metamask and adding Tenderly Devnet");
+  await expect(page.getByTestId("rk-connect-button")).toBeAttached();
+});
+
+test.skip("Test approving and executing a transaction", async ({ page }) => {
   console.log("Metamask setup complete");
   await connectToTenderly({ page });
   await metamask.switchAccount("Account 3");
