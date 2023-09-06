@@ -56,7 +56,7 @@ jobs:
         working-directory: packages/frontend
 
       - name: Run E2E Tests
-        run: yarn run test:headless
+        run: yarn run test
         working-directory: packages/frontend
 
       - uses: actions/upload-artifact@v3
