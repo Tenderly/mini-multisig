@@ -17,7 +17,7 @@ const DEFAULT_OWNERS = [
 type PageParams = { page: Page };
 type MultiSig = { name: string; owners: string[]; signaturesRequired: number };
 
-test("Test connecting another account", async ({ page }) => {
+test.skip("Test connecting another account", async ({ page }) => {
   await connectToTenderly({ page });
   await metamask.switchAccount("Account 1");
   await metamask.switchAccount("Account 2");

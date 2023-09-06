@@ -34,7 +34,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
     devnet(),
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [goerli] : []),
   ],
-  [publicProvider()]
+  [publicProvider()],
 );
 
 const projectId = "d11cc37b9a0e16486a895e7b30f68607";

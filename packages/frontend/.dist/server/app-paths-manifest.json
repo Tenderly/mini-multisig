@@ -1,6 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/api/multisig/route": "app/api/multisig/route.js",
-  "/api/multisig/[id]/transaction/route": "app/api/multisig/[id]/transaction/route.js"
-}
