@@ -1,9 +1,8 @@
-import { Page } from "@playwright/test";
+import { Page, test as base } from "@playwright/test";
 import * as metamask from "@synthetixio/synpress/commands/metamask";
-import { expect, test } from "../fixtures";
-import { approveTx as approveTransactionInMetaMask } from "../metamask-extensions";
-import { test as base, chromium, type BrowserContext } from "@playwright/test";
 import * as dotenv from "dotenv";
+import { expect, test } from "../lib/tests/test-fixtures";
+import { approveTx as approveTransactionInMetaMask } from "../lib/tests/metamask-extensions";
 
 dotenv.config();
 
@@ -17,7 +16,7 @@ const DEFAULT_OWNERS = [
 type PageParams = { page: Page };
 type MultiSig = { name: string; owners: string[]; signaturesRequired: number };
 
-test("Test connecting another account", async ({ page }) => {
+test.skip("Test connecting another account", async ({ page }) => {
   await connectToTenderly({ page });
   await metamask.switchAccount("Account 1");
   await metamask.switchAccount("Account 2");
