@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "playwright:chromium": "playwright install chromium",
-    "test": "playwright test --project=chromium"
+    "test": "playwright test --project=chromium",
+    "test:headless": "HEADLESS_MODE=true playwright test --project=chromium",
+    "serve": "serve ./next -p 3000"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.1",
@@ -45,6 +47,7 @@
     "@playwright/test": "^1.37.1",
     "@synthetixio/synpress": "^3.7.2-beta.4",
     "dotenv": "^16.3.1",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "serve": "^14.2.1"
   }
 }

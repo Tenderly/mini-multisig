@@ -33,6 +33,15 @@ jobs:
       #   run: yarn install
       #   working-directory: packages/frontend
 
+      - name: Create a DevNet for Hardhat tests
+        run: yarn run test:devnet
+        working-directory: packages/hardhat-2.14
+        env:
+          TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_TOKEN }}
+          TENDERLY_PROJECT_SLUG: mini-safe # your project slug
+          TENDERLY_DEVNET_TEMPLATE: mini-safe # your devnet template slug
+          TENDERLY_ACCOUNT_ID: nenad # your username or organization name
+
       - name: Run Hardhat Tests
         run: yarn run test:devnet
         working-directory: packages/hardhat-2.14
@@ -41,3 +50,29 @@ jobs:
           TENDERLY_PROJECT_SLUG: mini-safe # your project slug
           TENDERLY_DEVNET_TEMPLATE: mini-safe # your devnet template slug
           TENDERLY_ACCOUNT_ID: nenad # your username or organization name
+
+      - name: Create a DevNet for E2E tests
+        run: yarn run test:devnet
+        working-directory: packages/hardhat-2.14
+        env:
+          TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_TOKEN }}
+          TENDERLY_PROJECT_SLUG: mini-safe # your project slug
+          TENDERLY_DEVNET_TEMPLATE: mini-safe # your devnet template slug
+          TENDERLY_ACCOUNT_ID: nenad # your username or organization name
+
+      - name: Run E2E Tests
+        run: yarn run test:headless
+        working-directory: packages/frontend
+        env:
+          TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_TOKEN }}
+          TENDERLY_PROJECT_SLUG: mini-safe # your project slug
+          TENDERLY_DEVNET_TEMPLATE: mini-safe # your devnet template slug
+          TENDERLY_ACCOUNT_ID: nenad # your username or organization name
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: packages/frontend/playwright-report/
+          retention-days: 30
+

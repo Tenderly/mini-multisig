@@ -254,6 +254,7 @@ function MultiSigCreateReview({
     const createdTopic = ifc.getEventTopic("Create");
 
     const logs = tx.data?.logs
+      //@ts-ignore
       .filter((log) => log.topics.indexOf(createdTopic) >= 0)
       .map((log) => ifc.parseLog(log));
 
@@ -354,6 +355,7 @@ function TxOverview({
 
     console.log("Logs", transactionData.logs[0].topics);
     const createdEventRaw = transactionData.logs.filter(
+      //@ts-ignore
       (log) => log.topics.indexOf(createdTopic) >= 0,
     )[0];
     console.log("Topic", createdEventRaw, createdTopic);
