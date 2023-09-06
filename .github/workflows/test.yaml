@@ -56,7 +56,7 @@ jobs:
       #     TENDERLY_ACCOUNT_ID: nenad # your username or organization name
 
       - name: Run E2E Tests
-        run: cd ../hardhat-2.14 && npm run stage && cd ../frontend && npm run test:headless
+        run: cd ../hardhat-2.14 && npm run stage && cd ../frontend && cat tenderly.json && npm run test:headless
         working-directory: packages/frontend
         env:
           TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_TOKEN }}
