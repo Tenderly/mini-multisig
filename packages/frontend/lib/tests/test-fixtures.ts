@@ -34,7 +34,7 @@ export const test = base.extend<{
 
     // launch browser
     const context = await chromium.launchPersistentContext("", {
-      headless: false,
+      headless: !!process.env.HEADLESS_MODE,
       args: browserArgs,
     });
 
@@ -45,7 +45,7 @@ export const test = base.extend<{
     await initialSetup(chromium, {
       secretWordsOrPrivateKey:
         "test test test test test test test test test test test junk",
-      network: "optimism",
+      network: "ethereum",
       password: "Tester@1234",
       enableAdvancedSettings: true,
     });

@@ -43,7 +43,7 @@ jobs:
         working-directory: packages/frontend
 
       - name: Playwright setup
-        run: npx playwright install
+        run: npx playwright install-deps chromium
         working-directory: packages/frontend
 
       # - name: Create a DevNet for E2E tests and stage the contracts
