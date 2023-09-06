@@ -116,6 +116,7 @@ async function proposeTransaction(
 async function connectRainbowKitToMM({ page }: PageParams) {
   await page.getByTestId("rk-connect-button").click();
   await page.getByTestId("rk-wallet-option-metaMask").click();
+  await metamask.switchToMetamaskIfNotActive();
   await metamask.acceptAccess({ allAccounts: true });
 }
 async function connectToTenderly({ page }: PageParams) {

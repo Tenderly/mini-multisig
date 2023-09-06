@@ -38,6 +38,14 @@ jobs:
       #     TENDERLY_DEVNET_TEMPLATE: mini-safe-tests # your devnet template slug
       #     TENDERLY_ACCOUNT_ID: nenad # your username or organization name
 
+      - name: Install Frontend Dependencies
+        run: yarn install
+        working-directory: packages/frontend
+
+      - name: Playwright setup
+        run: npx playwright install
+        working-directory: packages/frontend
+        
       - name: Create a DevNet for E2E tests and stage the contracts
         run: yarn run stage
         working-directory: packages/hardhat-2.14
@@ -46,14 +54,6 @@ jobs:
           TENDERLY_PROJECT_SLUG: mini-safe # your project slug
           TENDERLY_DEVNET_TEMPLATE: mini-safe-tests # your devnet template slug
           TENDERLY_ACCOUNT_ID: nenad # your username or organization name
-
-      - name: Install Frontend Dependencies
-        run: yarn install
-        working-directory: packages/frontend
-
-      - name: Playwright setup
-        run: npx playwright install
-        working-directory: packages/frontend
 
       - name: Run E2E Tests
         run: yarn run test:headless
