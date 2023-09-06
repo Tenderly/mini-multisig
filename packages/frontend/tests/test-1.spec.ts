@@ -24,6 +24,7 @@ test.skip("Test connecting another account", async ({ page }) => {
 });
 
 test("Test approving and executing a transaction", async ({ page }) => {
+  console.log("Metamask setup complete");
   await connectToTenderly({ page });
   await metamask.switchAccount("Account 3");
 
@@ -119,11 +120,12 @@ async function connectRainbowKitToMM({ page }: PageParams) {
 }
 async function connectToTenderly({ page }: PageParams) {
   await page.goto("http://localhost:3000/");
+  console.log("Connecting to metamask and adding Tenderly Devnet");
   await connectRainbowKitToMM({ page });
-  // take the chain
   await page.getByTestId("rk-chain-button").click();
   await page.getByTestId("rk-chain-option-736031").click();
   await metamask.allowToAddAndSwitchNetwork();
+  console.log("Connected to Tenderly Devnet");
 }
 
 async function createMultiSig({
