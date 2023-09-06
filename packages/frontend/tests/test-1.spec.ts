@@ -128,6 +128,7 @@ async function connectRainbowKitToMM({ page }: PageParams) {
 }
 async function connectToTenderly({ page }: PageParams) {
   await page.goto("http://localhost:3000/");
+  await expect(page.getByTestId("rk-connect-button")).toBeAttached();
   console.log("Connecting to metamask and adding Tenderly Devnet");
   await connectRainbowKitToMM({ page });
   await page.getByTestId("rk-chain-button").click();
