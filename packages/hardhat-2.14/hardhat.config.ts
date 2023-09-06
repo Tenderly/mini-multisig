@@ -9,7 +9,7 @@ const config: HardhatUserConfig = {
   defaultNetwork: "tenderly",
   networks: {
     tenderly: {
-      url: "https://rpc.vnet.tenderly.co/devnet/mini-safe-tests/d6a6a128-bff4-4788-92e6-f3c582d4789c",
+      url: "https://rpc.vnet.tenderly.co/devnet/mini-safe-tests/27b9ab0c-63c2-4415-bc14-52bb5f0f7f0a",
       chainId: 736031,
     },
   },

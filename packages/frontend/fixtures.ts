@@ -3,6 +3,7 @@ import { initialSetup } from "@synthetixio/synpress/commands/metamask";
 import { setExpectInstance } from "@synthetixio/synpress/commands/playwright";
 import { resetState } from "@synthetixio/synpress/commands/synpress";
 import { prepareMetamask } from "@synthetixio/synpress/helpers";
+import { importAccounts } from "./metamask-extensions";
 
 export const test = base.extend<{
   context: BrowserContext;
@@ -13,7 +14,7 @@ export const test = base.extend<{
 
     // download metamask
     const metamaskPath = await prepareMetamask(
-      process.env.METAMASK_VERSION || "10.25.0"
+      process.env.METAMASK_VERSION || "10.25.0",
     );
 
     // prepare browser args
@@ -47,16 +48,16 @@ export const test = base.extend<{
       network: "optimism",
       password: "Tester@1234",
       enableAdvancedSettings: true,
-  });
+    });
+
+    await importAccounts();
 
     await use(context);
 
     await context.close();
 
     await resetState();
-    
   },
 });
 
 export const expect = test.expect;
-

@@ -42,8 +42,8 @@ jobs:
           TENDERLY_DEVNET_TEMPLATE: mini-safe # your devnet template slug
           TENDERLY_ACCOUNT_ID: nenad # your username or organization name
 
-      - name: Create a DevNet for E2E tests
-        run: yarn run devnet:minisafe:new
+      - name: Create a DevNet for E2E tests and stage the contracts
+        run: yarn run stage
         working-directory: packages/hardhat-2.14
         env:
           TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_TOKEN }}

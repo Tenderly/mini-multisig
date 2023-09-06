@@ -11,7 +11,7 @@ const DEFAULT_OWNERS = [
   // correspond to MM_ACCOUNT_1_PK, MM_ACCOUNT_2_PK, MM_ACCOUNT_3_PK
   "0xC305f4b9925b9eC6b3D0FCC42B7b22F1245A5011",
   "0xdb623c0f74d4ed5af4b254327147c4ac7e5d3fac",
-  "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+  "0x08B108B490389F158b3040faA1705339633b2455",
 ];
 
 type PageParams = { page: Page };
@@ -25,7 +25,7 @@ test.skip("Test connecting another account", async ({ page }) => {
 
 test("Test approving and executing a transaction", async ({ page }) => {
   await connectToTenderly({ page });
-  await metamask.switchAccount("Account 1");
+  await metamask.switchAccount("Account 3");
 
   await createMultiSig({
     page,
@@ -45,11 +45,11 @@ test("Test approving and executing a transaction", async ({ page }) => {
 
   await approveTransaction(0, page);
 
-  await metamask.switchAccount("Account 2");
+  await metamask.switchAccount("Account 4");
 
   await approveTransaction(0, page);
 
-  await metamask.switchAccount("Account 3");
+  await metamask.switchAccount("Account 5");
 
   await fundMultiSig(page);
 

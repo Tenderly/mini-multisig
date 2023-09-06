@@ -893,7 +893,7 @@ function CreateMultiSigDialog({
     // TODO: for testing purposes, add your 2-3 addresses
     "0xC305f4b9925b9eC6b3D0FCC42B7b22F1245A5011",
     "0xdb623c0f74d4ed5af4b254327147c4ac7e5d3fac",
-    "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    "0x08B108B490389F158b3040faA1705339633b2455",
   ].join("\n");
 
   const ZERO_MULTISIG: TMultiSig = {
