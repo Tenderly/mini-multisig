@@ -16,20 +16,9 @@ const DEFAULT_OWNERS = [
 type PageParams = { page: Page };
 type MultiSig = { name: string; owners: string[]; signaturesRequired: number };
 
-test.skip("Test connecting another account", async ({ page }) => {
-  await connectToTenderly({ page });
-  await metamask.switchAccount("Account 1");
-  await metamask.switchAccount("Account 2");
-});
 
-test("Connects too dapp", async ({ page }) => {
-  await page.goto("http://127.0.0.1:3000/");
-  console.log("Dapp is ON?");
-  await expect(page.getByTestId("rk-connect-button")).toBeAttached();
-  console.log("Dapp is ON!");
-});
 
-test.skip("Test approving and executing a transaction", async ({ page }) => {
+test("Test approving and executing a transaction", async ({ page }) => {
   console.log("Metamask setup complete");
   await connectToTenderly({ page });
   await metamask.switchAccount("Account 3");
@@ -126,6 +115,7 @@ async function connectRainbowKitToMM({ page }: PageParams) {
   await metamask.switchToMetamaskIfNotActive();
   await metamask.acceptAccess({ allAccounts: true });
 }
+
 async function connectToTenderly({ page }: PageParams) {
   await page.goto("http://127.0.0.1:3000/");
   await expect(page.getByTestId("rk-connect-button")).toBeAttached();
@@ -151,3 +141,16 @@ async function createMultiSig({
   await page.getByTestId("ms-multisig-create").click();
   await approveTransactionInMetaMask({ page });
 }
+
+test.skip("Test connecting another account", async ({ page }) => {
+  await connectToTenderly({ page });
+  await metamask.switchAccount("Account 1");
+  await metamask.switchAccount("Account 2");
+});
+
+test.skip("Connects too dapp", async ({ page }) => {
+  await page.goto("http://127.0.0.1:3000/");
+  console.log("Dapp is ON?");
+  await expect(page.getByTestId("rk-connect-button")).toBeAttached();
+  console.log("Dapp is ON!");
+});
