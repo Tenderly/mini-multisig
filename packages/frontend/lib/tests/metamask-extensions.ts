@@ -4,11 +4,9 @@ import {
   advancedPageElements,
   settingsPageElements,
 } from "@synthetixio/synpress/pages/metamask/settings-page";
-// import {} from  "@synthetixio/synpress/pages/metamask/settings-page";
 import { Page } from "@playwright/test";
 
 export const deactivateCustomNonce = async (experimental: boolean) => {
-  await metamask.switchToMetamaskIfNotActive();
   await metamask.goToAdvancedSettings();
   if (
     (await playwright
