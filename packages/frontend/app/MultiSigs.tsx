@@ -258,7 +258,7 @@ function MultiSigCreateReview({
       .filter((log) => log.topics.indexOf(createdTopic) >= 0)
       .map((log) => ifc.parseLog(log));
 
-    if (!logs) {
+    if (!logs || !logs[0] || !logs[0].args) {
       return;
     }
 

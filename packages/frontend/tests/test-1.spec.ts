@@ -117,12 +117,10 @@ async function connectRainbowKitToMM({ page }: PageParams) {
 async function connectToTenderly({ page }: PageParams) {
   await page.goto("http://127.0.0.1:3000/");
   await expect(page.getByTestId("rk-connect-button")).toBeAttached();
-  console.log("Connecting to metamask and adding Tenderly Devnet");
   await connectRainbowKitToMM({ page });
   await page.getByTestId("rk-chain-button").click();
   await page.getByTestId("rk-chain-option-736031").click();
   await metamask.allowToAddAndSwitchNetwork();
-  console.log("Connected to Tenderly Devnet");
 }
 
 async function createMultiSig({
@@ -148,7 +146,5 @@ test.skip("Test connecting another account", async ({ page }) => {
 
 test.skip("Connects too dapp", async ({ page }) => {
   await page.goto("http://127.0.0.1:3000/");
-  console.log("Dapp is ON?");
   await expect(page.getByTestId("rk-connect-button")).toBeAttached();
-  console.log("Dapp is ON!");
 });
