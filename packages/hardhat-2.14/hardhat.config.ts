@@ -9,12 +9,12 @@ const config: HardhatUserConfig = {
   defaultNetwork: "tenderly",
   networks: {
     tenderly: {
-      url: "???",
-      chainId: -1,
+      url: "https://rpc.vnet.tenderly.co/devnet/mini-safe-tests/880efa62-4b08-4adb-b49e-9ac8dba39211",
+      chainId: 736031,
     },
   },
   tenderly: {
-    username: "PASTE YOUR USERNAME",
+    username: "nenad",
     project: "mini-safe",
   },
 };

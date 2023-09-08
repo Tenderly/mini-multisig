@@ -17,7 +17,6 @@ type PageParams = { page: Page };
 type MultiSig = { name: string; owners: string[]; signaturesRequired: number };
 
 
-
 test("Test approving and executing a transaction", async ({ page }) => {
   console.log("Metamask setup complete");
   await connectToTenderly({ page });
@@ -112,7 +111,6 @@ async function connectRainbowKitToMM({ page }: PageParams) {
   await metamask.closePopupAndTooltips();
   await page.getByTestId("rk-connect-button").click();
   await page.getByTestId("rk-wallet-option-metaMask").click();
-  await metamask.switchToMetamaskIfNotActive();
   await metamask.acceptAccess({ allAccounts: true });
 }
 
