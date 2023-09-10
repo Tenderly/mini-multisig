@@ -11,7 +11,7 @@ async function main() {
     address: multisigFactory.address,
   });
 
-  
+  // primitive config management
   const MultiSigFactoryAbi = JSON.parse(readFileSync("artifacts/contracts/MultiSigFactory.sol/MultiSigFactory.json").toString()).abi;
   const MultiSigAbi = JSON.parse(readFileSync("artifacts/contracts/MultiSigWallet.sol/MultiSigWallet.json").toString()).abi;
   const multiSigWalletBuildInfo = JSON.parse(readFileSync("artifacts/contracts/MultiSigWallet.sol/MultiSigWallet.dbg.json").toString()).buildInfo
@@ -19,7 +19,6 @@ async function main() {
   const multiSigWalletBuildInfoRel = multiSigWalletBuildInfo.slice(multiSigWalletBuildInfo.indexOf("build-info"))
   console.log("Build Info", multiSigWalletBuildInfoRel);
 
-  copyFileSync(`artifacts/${multiSigWalletBuildInfoRel}`, "../frontend/multisigWalletBuildInfo.json")
   writeFileSync(
     "../frontend/app/deployment.json",
     JSON.stringify({
