@@ -1,2 +1,4 @@
 node_modules
 .devnet
+frontend/tenderly.json
+frontend/deployment.json
