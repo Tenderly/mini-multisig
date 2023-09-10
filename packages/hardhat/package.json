@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "deploy": "npx hardhat run scripts/deploy.ts --network tenderly",
-    "devnet:minisafetests:new": "npm run tenderly:devnet:new mini-safe mini-safe-tests 736031",
-    "stage": "npm run devnet:minisafetests:new && hardhat run scripts/deploy.ts --network tenderly",
+    "devnet:minimultisigtests:new": "npm run tenderly:devnet:new mini-multisig mini-multisig-tests 736031",
+    "stage": "npm run devnet:minimultisigtests:new && hardhat run scripts/deploy.ts --network tenderly",
     "tenderly:devnet:new": "ts-node lib/devnet.new.ts",
-    "test:devnet": "npm run devnet:minisafetests:new && hardhat test --network tenderly"
+    "test:devnet": "npm run devnet:minimultisigtests:new && hardhat test --network tenderly"
   },
   "keywords": [],
   "author": "",
