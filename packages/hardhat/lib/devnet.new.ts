@@ -1,5 +1,10 @@
 import { execSync } from "child_process";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync } from "fs";
+import {
+  updateFrontEndNetworkInfo,
+  updateHardhatConfig,
+  VNetConfig,
+} from "./utils";
 
 const {
   TENDERLY_PROJECT_SLUG,
@@ -21,31 +26,20 @@ if (
 }
 
 if (!!TENDERLY_ACCESS_KEY) {
+  // used by CI
   execSync(
-    `tenderly devnet spawn-rpc --project ${TENDERLY_PROJECT_SLUG} --template ${TENDERLY_DEVNET_TEMPLATE} --account ${TENDERLY_ACCOUNT_ID}  --access_key ${TENDERLY_ACCESS_KEY} 2>.devnet`
+    `tenderly devnet spawn-rpc --project ${TENDERLY_PROJECT_SLUG} --template ${TENDERLY_DEVNET_TEMPLATE} --account ${TENDERLY_ACCOUNT_ID}  --access_key ${TENDERLY_ACCESS_KEY} 2>.devnet`,
   );
 } else {
   execSync(
-    `tenderly devnet spawn-rpc --project ${tenderlyProject} --template ${devnetTemplate} 2>.devnet`
+    `tenderly devnet spawn-rpc --project ${tenderlyProject} --template ${devnetTemplate} 2>.devnet`,
   );
 }
 
 const chainId = Number.parseInt(chainIdStr);
 const devnet = readFileSync(".devnet").toString().trim();
-writeFileSync(
-  "../frontend/tenderly.json",
-  JSON.stringify({
-    devnet: { rpc: devnet, chainId },
-    project: tenderlyProject,
-  })
-);
 
-const hardhatConfig = readFileSync("hardhat.config.ts").toString();
+const devnetConfig: VNetConfig = { rpc: devnet, chainId };
 
-const devnetized = hardhatConfig
-  .replace(/^(\s+url:\s+)"(.*?)",?/gm, `      url: "${devnet}",`)
-  .replace(/^(\s+chainId:\s+.\d+),?/gm, `      chainId: ${chainId},`);
-
-console.log("Updating hardhat.config.ts with the new devnet rpc", devnet);
-
-writeFileSync("hardhat.config.ts", devnetized);
+updateHardhatConfig(devnetConfig);
+updateFrontEndNetworkInfo(devnetConfig, tenderlyProject);
