@@ -3,6 +3,7 @@ import * as metamask from "@synthetixio/synpress/commands/metamask";
 import * as dotenv from "dotenv";
 import { expect, test } from "../lib/tests/test-fixtures";
 import { approveTx as approveTransactionInMetaMask } from "../lib/tests/metamask-extensions";
+import tenderlyNetworkConfig from "../tenderly.json";
 
 dotenv.config();
 
@@ -16,11 +17,10 @@ const DEFAULT_OWNERS = [
 type PageParams = { page: Page };
 type MultiSig = { name: string; owners: string[]; signaturesRequired: number };
 
-
 test("Test approving and executing a transaction", async ({ page }) => {
   console.log("Metamask setup complete");
   await connectToTenderly({ page });
-  await metamask.switchAccount("Account 3");
+  await metamask.switchAccount("Account 2");
 
   await createMultiSig({
     page,
@@ -36,15 +36,15 @@ test("Test approving and executing a transaction", async ({ page }) => {
     txData: "0x",
   });
 
-  openTransaction(0, page);
+  await openTransaction(0, page);
+
+  await approveTransaction(0, page);
+
+  await metamask.switchAccount("Account 3");
 
   await approveTransaction(0, page);
 
   await metamask.switchAccount("Account 4");
-
-  await approveTransaction(0, page);
-
-  await metamask.switchAccount("Account 5");
 
   await fundMultiSig(page);
 
@@ -119,7 +119,9 @@ async function connectToTenderly({ page }: PageParams) {
   await expect(page.getByTestId("rk-connect-button")).toBeAttached();
   await connectRainbowKitToMM({ page });
   await page.getByTestId("rk-chain-button").click();
-  await page.getByTestId("rk-chain-option-736031").click();
+  await page
+    .getByTestId(`rk-chain-option-${tenderlyNetworkConfig.network.chainId}`)
+    .click();
   await metamask.allowToAddAndSwitchNetwork();
 }
 
