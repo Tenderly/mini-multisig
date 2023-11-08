@@ -18,12 +18,19 @@ export function updateFrontEndNetworkInfo(
   );
 }
 
-export function updateHardhatConfig({ rpc, chainId }: VNetConfig) {
+export function updateHardhatConfig(
+  { rpc, chainId }: VNetConfig,
+  tenderlyProject: string,
+) {
   const hardhatConfig = readFileSync("hardhat.config.ts").toString();
 
   const devnetized = hardhatConfig
     .replace(/^(\s+url:\s+)"(.*?)",?/gm, `      url: "${rpc}",`)
-    .replace(/^(\s+chainId:\s+.\d+),?/gm, `      chainId: ${chainId},`);
+    .replace(/^(\s+chainId:\s+.\d+),?/gm, `      chainId: ${chainId},`)
+    .replace(
+      /^(\s+project:\s+)"(.*?)",?/gm,
+      `    project: "${tenderlyProject}",`,
+    );
 
   console.log("Updating hardhat.config.ts with the new devnet rpc", {
     rpc,
