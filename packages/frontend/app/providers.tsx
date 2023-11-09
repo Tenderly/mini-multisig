@@ -85,11 +85,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
-console.log("Connecting to ", tenderlyConfig.devnet.rpc);
+console.log("Connecting to ", tenderlyConfig.network.rpc);
 
 function devnet() {
   const devnetChain: Chain = {
-    id: tenderlyConfig.devnet.chainId,
+    id: tenderlyConfig.network.chainId,
     name: "Test Tenderly",
     network: "test tenderly",
     nativeCurrency: {
@@ -99,10 +99,10 @@ function devnet() {
     },
     rpcUrls: {
       public: {
-        http: [tenderlyConfig.devnet.rpc],
+        http: [tenderlyConfig.network.rpc],
       },
       default: {
-        http: [tenderlyConfig.devnet.rpc],
+        http: [tenderlyConfig.network.rpc],
       },
     },
     blockExplorers: {
