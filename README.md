@@ -4,12 +4,7 @@
 By following along, you will learn how to verify and deploy your smart contracts using the Tenderly CLI, execute Hardhat tests, use Synpress & Playwright, run the Tenderly Debugger, and implement Continuous Integration tests with Github Actions to make sure it all works.
 
 
-<a href="#introduction">**Introduction**</a> · 
-<a href="#setup">**Setup**</a> 
-<a href="#deployment">**Deployment**</a>
-<a href="#testing">**Testing**</a>
- <a href="#Continuous Integration/Development (CI/CD)">**Integration**</a>
- <a href="#Other Useful Scripts">**Useful Scripts**</a> · 
+<a href="#introduction">**Introduction**</a> · <a href="#setup">**Setup**</a> . <a href="#deployment">**Deployment**</a> . <a href="#testing">**Testing**</a> . <a href="#Continuous Integration/Development (CI/CD)">**Integration**</a> . <a href="#Other Useful Scripts">**Useful Scripts**</a>  
 
 # Introduction
 Tenderly [DevNets](https://docs.tenderly.co/devnets/intro-to-devnets) enable you to deploy, test, and integrate smart contacts on the latest network state. Powered by the Tenderly Simulation Infrastructure, this feature allows you to have your own private simulated network which you can share with your team.
