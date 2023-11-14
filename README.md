@@ -1,5 +1,5 @@
 <h1 align="center">Tenderly Multi-Sig Wallet With Hardhat & Synpress
-</h1>This is an educational repo which demonstrates how you can test your smart contract using Tenderly DevNets and Synpress for End-to-End testing.<br>
+</h1>This is an educational repo which demonstrates how you can test your smart contract using Tenderly DevNets for testing infrastructure, HardHat for Smart Contract tests, and Synpress for End-to-End testing.<br>
 
 By following along, you will learn how to verify and deploy your smart contracts using the Tenderly CLI, execute Hardhat tests, use Synpress & Playwright, run the Tenderly Debugger, and implement Continuous Integration tests with Github Actions to make sure it all works.
 
@@ -23,7 +23,7 @@ The following technologies are used:
 | **Metamask & Rainbow Wallet** | Web3 Wallets |
 
 # Setup
-To set the project up, you will just need a new Tenderly Account.
+To set the project up, you will just need a new Tenderly Account and CLI installed.
 
 ## 1. Get Your Tenderly Account Set Up
 
@@ -31,14 +31,14 @@ To set the project up, you will just need a new Tenderly Account.
 2. Go [here](https://dashboard.tenderly.co/account/authorization) and click the `Generate Access Token` button. Create your Token and record the value for later use when we set up GitHub Actions and Continuous Integration.
 3. Next, install the [Tenderly CLI](https://github.com/Tenderly/tenderly-cli) and login with:
 
-```
+```bash
 tenderly login
 ```
 
 ## 2\. Set up a DevNet Template
 
 1. Create a new **project** in Tenderly and name it: `Mini Multisig`.
-2. Create a new DevNet **Template**, and name it: `Mini Multisig Test`. (Devnets -> Create Template) If you need help, [here](https://docs.tenderly.co/devnets/setting-up-devnets-for-local-development) is a link.
+2. Create a new DevNet **Template**, and name it: `Mini Multisig Tests`. (Devnets -> Create Template) If you need help, [here](https://docs.tenderly.co/devnets/setting-up-devnets-for-local-development) is a link.
 3. Copy and paste the following code for your **YAML** file:
 
 ```
@@ -73,7 +73,7 @@ template:
 tenderly whoami
 ```
 
-2. Open up `packages/hardhat/hardhat.config.ts` and add your `username` and `project` slug (mini-multisig) to the `config.tenderly` object.
+2. Open up `packages/hardhat/hardhat.config.ts` and add your `username` and `project` slug (`mini-multisig`) to the `config.tenderly` object.
 3. Spawn a new Tenderly Devnet from the CLI using:
 
 ```
@@ -86,9 +86,9 @@ npm run tenderly:devnet:new mini-multisig mini-multisig-tests 736031
 ```
 npx hardhat run scripts/deploy.ts --network tenderly
 ```
-> **NOTE 1:** When we run the `tenderly:devnet:new` script, the file`/app/tenderly.json` is produced, which allows us to pass the DevNet URL and ChainID to the frontend. The RPC URL and freshly staged contract addresses will be present there.  
+> **NOTE 1:** When we run the tenderly:devnet:new script, the file/app/tenderly.json is produced, which allows us to pass the DevNet URL and ChainID to the frontend. The RPC URL and freshly staged contract addresses will be present there.  
 
-> **NOTE 2:** When we run the `scripts/deploy.ts` script, an ABI (Application Binary Interface) file gets created as a result. This file, `frontend/app/deployment.json`, contains the necessary interface (functions and data) which allow us to interact with `smart contracts—packages/hardhat/contracts/MultiSigFactory.sol` and `packages/hardhat/contracts/MultiSigWallet.sol`
+> **NOTE 2:** When we run the `scripts/deploy.ts` script, an ABI (Application Binary Interface) file gets created as a result. This file, `frontend/app/deployment.json`, contains the necessary interface (functions and data) which allow us to interact with `smart contracts—packages/hardhat/contracts/MultiSigFactory.sol` and `packages/hardhat/contracts/MultiSigWallet.sol`. In addition, the MultiSigFactory address allows the front end to know where to connect to.
 
 # Testing
 
@@ -114,11 +114,6 @@ cd packages/frontend
 npm run test
 ```
 
-# Continuous Integration/Development (CI/CD)
-
-## 6\. BONUS: Set up Continuous Integration for Your Project
-
-> This isn't really anything specific to Tenderly, but we thought it would be nice to add this here as well, for those interested in setting up your CI/CD environment using GitHub Actions. Doing so will allow you to see this project and the E2E testing as part of CI/CD in full.
 
 1. Create a new folder in your project (create at the root level) named `.github/workflows`.
 2. Inside the directory, create a new file named `tests.yaml`.
