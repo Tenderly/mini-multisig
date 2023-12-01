@@ -8,7 +8,9 @@
     "devnet:minimultisigtests:new": "npm run tenderly:devnet:new mini-multisig mini-multisig-tests 736031",
     "stage:devnet": "npm run devnet:minimultisigtests:new && hardhat run scripts/deploy.ts --network tenderly",
     "tenderly:devnet:new": "ts-node lib/devnet.new.ts",
-    "test:devnet": "npm run devnet:minimultisigtests:new && hardhat test --network tenderly"
+    "tenderly:testnet:use": "ts-node lib/testnet.use.ts",
+    "tenderly:fund": "npx hardhat run scripts/fund-accounts.ts",
+    "sendTx": "ts-node scripts/ethersTx.ts"
   },
   "keywords": [],
   "author": "",

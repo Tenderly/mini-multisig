@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  RainbowKitProvider,
   connectorsForWallets,
   darkTheme,
   getDefaultWallets,
+  RainbowKitProvider,
 } from "@rainbow-me/rainbowkit";
 import {
   argentWallet,
@@ -12,26 +12,40 @@ import {
   trustWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import * as React from "react";
-import { Chain, WagmiConfig, configureChains, createConfig } from "wagmi";
-import {
-  arbitrum,
-  goerli,
-  mainnet,
-  optimism,
-  polygon,
-  zora,
-} from "wagmi/chains";
+import { Chain, configureChains, createConfig, WagmiConfig } from "wagmi";
+import { goerli } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import tenderlyConfig from "../tenderly.json";
+import { defineChain } from "viem";
+
+function tenderlyNetwork(): Chain {
+  return defineChain({
+    id: tenderlyConfig.network.chainId,
+    name: "Tenderly Test Network",
+    network: "test tenderly",
+    nativeCurrency: {
+      decimals: 18,
+      name: "Tenderly Ether",
+      symbol: "TTETH",
+    },
+    rpcUrls: {
+      public: {
+        http: [tenderlyConfig.network.rpc],
+      },
+      default: {
+        http: [tenderlyConfig.network.rpc],
+      },
+    },
+    blockExplorers: {
+      default: { name: "Tenderly", url: tenderlyConfig.network.rpc },
+    },
+    testnet: true,
+  });
+}
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
-    mainnet,
-    polygon,
-    optimism,
-    arbitrum,
-    zora,
-    devnet(),
+    tenderlyNetwork(),
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [goerli] : []),
   ],
   [publicProvider()],
@@ -86,30 +100,3 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 
 console.log("Connecting to ", tenderlyConfig.network.rpc);
-
-function devnet() {
-  const devnetChain: Chain = {
-    id: tenderlyConfig.network.chainId,
-    name: "Test Tenderly",
-    network: "test tenderly",
-    nativeCurrency: {
-      decimals: 18,
-      name: "Test Tenderly",
-      symbol: "TTETH",
-    },
-    rpcUrls: {
-      public: {
-        http: [tenderlyConfig.network.rpc],
-      },
-      default: {
-        http: [tenderlyConfig.network.rpc],
-      },
-    },
-    blockExplorers: {
-      default: { name: "SnowTrace", url: "https://snowtrace.io" },
-      etherscan: { name: "SnowTrace", url: "https://snowtrace.io" },
-    },
-    testnet: true,
-  };
-  return devnetChain;
-}

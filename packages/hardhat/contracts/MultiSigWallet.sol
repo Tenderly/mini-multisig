@@ -156,7 +156,7 @@ contract MultiSigWallet {
     Transaction storage transaction = transactions[_txIndex];
 
     require(
-      transaction.numConfirmations > signaturesRequired,
+      transaction.numConfirmations >= signaturesRequired,
       "insufficient number of confirmations, cannot execute tx"
     );
 

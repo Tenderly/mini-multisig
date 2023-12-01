@@ -1,4 +1,4 @@
-import { HardhatUserConfig, task } from "hardhat/config";
+import { HardhatUserConfig, task, types } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import * as tenderly from "@tenderly/hardhat-tenderly";
 
@@ -9,13 +9,13 @@ const config: HardhatUserConfig = {
   defaultNetwork: "tenderly",
   networks: {
     tenderly: {
-      url: "https://rpc.vnet.tenderly.co/devnet/mini-multisig-tests/a9412d56-7d8c-4839-ba3a-163e96c0fd69",
-      chainId: 736031,
+      url: "RPC LINK",
+      chainId: -1,
     },
   },
   tenderly: {
-    username: "YOUR USERNAME (not email!)",
-    project: "YOUR PROJECT SLUG",
+    username: "YOUR USERNAME OR ORG NAME",
+    project: "YOUR PROJECT",
   },
 };
 
@@ -28,6 +28,19 @@ task("verifyExistingMS", "Verifies deployed MultiSigWallet instance")
       name: "MultiSigWallet",
       address: args.address,
     });
+  });
+
+task("tenderly:fund", "Funds accounts")
+  .addParam("amount", "Amount in ETH", "100")
+  .addParam("addresses", "Addresses array (comma separated)", "", types.string)
+  .setAction(async (args, hre) => {
+    const { amount, addresses: addressesStr } = args;
+    const addresses = addressesStr.split(",");
+    const amtWei = hre.ethers.utils.hexValue(
+      hre.ethers.utils.parseUnits(amount, "ether").toHexString(),
+    );
+    console.log(addresses, amtWei);
+    await hre.ethers.provider.send("tenderly_setBalance", [addresses, amtWei]);
   });
 
 export default config;

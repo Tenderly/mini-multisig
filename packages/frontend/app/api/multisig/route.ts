@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     console.log("Adding MultiSig", req);
     t.push(req);
     exec(
-      `cd ../hardhat-2.14 && npx hardhat verifyExistingMS --network tenderly --address ${req.address}`,
+      `cd ../hardhat && npx hardhat verifyExistingMS --network tenderly --address ${req.address}`,
       function (err, stdout, stderr) {
         console.log(stdout);
         console.log(stderr);
