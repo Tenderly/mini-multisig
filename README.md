@@ -26,7 +26,7 @@ Both come with integrated debugger, transaction simulator, and unlimited faucet.
 [TestNets Demo Video](https://www.loom.com/share/29ccbe3a40d54aaabed738b5b96a4fdd?sid=92b8a716-4ef2-48bc-9a6f-79b551a6e6c6)
 
 > [!NOTE]
-> Tenderly TestNets are in Early access. You can apply via [Early Access Form]().
+> Tenderly TestNets are in Early access. You can apply via [Early Access Form](https://tenderly.typeform.com/testnetsEA).
 
 ## Using a DevNet for testing
 
